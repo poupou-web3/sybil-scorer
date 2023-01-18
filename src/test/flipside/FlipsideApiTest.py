@@ -10,7 +10,7 @@ absolute_path = os.fspath(Path.cwd().parent)
 if absolute_path not in sys.path:
     sys.path.append(absolute_path)
 
-from src.main.fliside.FlipsideApi import FlipsideApi
+from src.main.flipside.FlipsideApi import FlipsideApi
 
 
 class FlipsideApiTest(unittest.TestCase):
