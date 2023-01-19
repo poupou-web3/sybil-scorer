@@ -1,5 +1,6 @@
 from shroomdk import ShroomDK
 import pandas as pd
+import os
 
 class FlipsideApi(object):
 
@@ -17,6 +18,36 @@ class FlipsideApi(object):
     def execute_query(self, sql):
         query_result_set = self.sdk.query(sql)
         return pd.DataFrame(query_result_set.records)
+
+    def extract_transactions(self, dir, df_address):
+
+        list_network = ["ethereum", "polygon", "arbitrum", "avalanche", "gnosis", "optimism"]
+        for network in list_network:
+            print("Extracting transactions for network: ", network)
+            df = self.get_transactions(df_address, network)
+            csv_dir = os.path.join(dir, network)
+            if not os.path.exists(csv_dir):
+                os.makedirs(csv_dir)
+            df.to_csv(os.path.join(csv_dir, "transactions.csv"))
+
+    def get_transactions(self, df_address, network):
+        if network == "ethereum":
+            sql = self.get_eth_transactions_sql_query(df_address)
+        elif network == "polygon":
+            sql = self.get_polygon_transactions_sql_query(df_address)
+        elif network == "arbitrum":
+            sql = self.get_arbitrum_transactions_sql_query(df_address)
+        elif network == "avalanche":
+            sql = self.get_avalanche_transactions_sql_query(df_address)
+        elif network == "gnosis":
+            sql = self.get_gnosis_transactions_sql_query(df_address)
+        elif network == "optimism":
+            sql = self.get_optimism_transactions_sql_query(df_address)
+        else:
+            raise Exception("Network not supported")
+
+        df = self.execute_query(sql)
+        return df
 
     @staticmethod
     def get_string_address(df_address):
