@@ -1,7 +1,6 @@
 from shroomdk import ShroomDK
 import pandas as pd
 
-
 class FlipsideApi(object):
 
     def __init__(self, api_key):
@@ -27,37 +26,94 @@ class FlipsideApi(object):
         lower_str = lower_str[:-1]
         return lower_str
 
-    def get_eth_transactions_sql_query(self, df_address):
+    def get_eth_transactions_sql_query(self, df_address, limit=0):
         address_list = self.get_string_address(df_address)
+        if limit != 0:
+            string_limit = f"LIMIT {limit}"
+        else:
+            string_limit = ""
         sql = f"""
                 SELECT *
                 FROM ethereum.core.fact_transactions
                 WHERE FROM_ADDRESS IN ({address_list})
                 OR TO_ADDRESS IN ({address_list})
-                LIMIT 10;
+                {string_limit};
                 """
         return sql
 
-    def get_polygon_transactions_sql_query(self, df_address):
+    def get_polygon_transactions_sql_query(self, df_address, limit=0):
         address_list = self.get_string_address(df_address)
+        if limit != 0:
+            string_limit = f"LIMIT {limit}"
+        else:
+            string_limit = ""
         sql = f"""
                 SELECT *
-                FROM ethereum.core.fact_transactions
+                FROM polygon.core.fact_transactions
                 WHERE FROM_ADDRESS IN ({address_list})
                 OR TO_ADDRESS IN ({address_list})
-                LIMIT 10;
+                {string_limit};
                 """
         return sql
 
-    def get_polygon_transactions_sql_query(self, df_address):
+    def get_arbitrum_transactions_sql_query(self, df_address, limit=0):
         address_list = self.get_string_address(df_address)
+        if limit != 0:
+            string_limit = f"LIMIT {limit}"
+        else:
+            string_limit = ""
         sql = f"""
                 SELECT *
-                FROM ethereum.core.fact_transactions
+                FROM arbitrum.core.fact_transactions
                 WHERE FROM_ADDRESS IN ({address_list})
                 OR TO_ADDRESS IN ({address_list})
-                LIMIT 10;
+                {string_limit};
                 """
+        return sql
+
+    def get_avalanche_transactions_sql_query(self, df_address, limit=0):
+        address_list = self.get_string_address(df_address)
+        if limit != 0:
+            string_limit = f"LIMIT {limit}"
+        else:
+            string_limit = ""
+        sql = f"""
+                SELECT *
+                FROM avalanche.core.fact_transactions
+                WHERE FROM_ADDRESS IN ({address_list})
+                OR TO_ADDRESS IN ({address_list})
+                {string_limit};
+                """
+        return sql
+
+    def get_gnosis_transactions_sql_query(self, df_address, limit=0):
+        address_list = self.get_string_address(df_address)
+        if limit != 0:
+            string_limit = f"LIMIT {limit}"
+        else:
+            string_limit = ""
+        sql = f"""
+                    SELECT *
+                    FROM gnosis.core.fact_transactions
+                    WHERE FROM_ADDRESS IN ({address_list})
+                    OR TO_ADDRESS IN ({address_list})
+                    {string_limit};
+                    """
+        return sql
+
+    def get_optimism_transactions_sql_query(self, df_address, limit=0):
+        address_list = self.get_string_address(df_address)
+        if limit != 0:
+            string_limit = f"LIMIT {limit}"
+        else:
+            string_limit = ""
+        sql = f"""
+                    SELECT *
+                    FROM optimism.core.fact_transactions
+                    WHERE FROM_ADDRESS IN ({address_list})
+                    OR TO_ADDRESS IN ({address_list})
+                    {string_limit};
+                    """
         return sql
 
 # # If the limit is reached in a 5-minute period, the sdk will exponentially back-off and retry the query up to the timeout_minutes parameter set when calling the query method.
