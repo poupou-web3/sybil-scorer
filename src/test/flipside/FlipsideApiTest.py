@@ -93,6 +93,11 @@ class FlipsideApiTest(unittest.TestCase):
         self.assertTrue(
             '0xc1e0b64374095ae27ca4a98932f03fa3fcfbf60dcece1ca12c71015b21fbedb9' in df_output.tx_hash.values)
 
+    def test_get_transactions_ethereum(self):
+        df_output = self.flipside_api.get_transactions(self.list_unique_address, "polygon")
+        self.assertTrue(
+            '0xc1e0b64374095ae27ca4a98932f03fa3fcfbf60dcece1ca12c71015b21fbedb9' in df_output.tx_hash.values)
+
 
 if __name__ == '__main__':
     unittest.main()

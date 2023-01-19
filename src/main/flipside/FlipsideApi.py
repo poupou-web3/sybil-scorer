@@ -14,21 +14,31 @@ class FlipsideApi(object):
         self.PAGE_SIZE = 100000
         # return results of page 1
         self.PAGE_NUMBER = 1
+        # max address to query
+        self.MAX_ADDRESS = 1000
 
     def execute_query(self, sql):
         query_result_set = self.sdk.query(sql)
         return pd.DataFrame(query_result_set.records)
 
-    def extract_transactions(self, dir, df_address):
-
+    def extract_transactions(self, extract_dir, df_address):
         list_network = ["ethereum", "polygon", "arbitrum", "avalanche", "gnosis", "optimism"]
         for network in list_network:
-            print("Extracting transactions for network: ", network)
-            df = self.get_transactions(df_address, network)
-            csv_dir = os.path.join(dir, network)
-            if not os.path.exists(csv_dir):
-                os.makedirs(csv_dir)
-            df.to_csv(os.path.join(csv_dir, "transactions.csv"))
+            try:
+                self.extract_transactions_net(extract_dir, df_address, network)
+            except Exception as e:
+                print(e)
+
+    def extract_transactions_net(self, extract_dir, df_address, network):
+        print("Extracting transactions for network: ", network)
+        len_address = len(df_address)
+        q, r = divmod(len_address, self.MAX_ADDRESS)
+        if r != 0:
+            q += 1
+        for i in range(q):
+            print(f"Extracting transactions for address: {i * self.MAX_ADDRESS} - {(i + 1) * self.MAX_ADDRESS}")
+            df = self.get_transactions(df_address[i * self.MAX_ADDRESS : (i + 1) * self.MAX_ADDRESS], network)
+            df.to_csv(os.path.join(extract_dir, f"transactions_{network}_{i}.csv"), index=False)
 
     def get_transactions(self, df_address, network):
         if network == "ethereum":
@@ -64,7 +74,14 @@ class FlipsideApi(object):
         else:
             string_limit = ""
         sql = f"""
-                SELECT *
+                SELECT TX_HASH,
+                BLOCK_TIMESTAMP,
+                FROM_ADDRESS,
+                TO_ADDRESS,
+                GAS_LIMIT,
+                GAS_USED,
+                TX_FEE,
+                ETH_VALUE
                 FROM ethereum.core.fact_transactions
                 WHERE FROM_ADDRESS IN ({address_list})
                 OR TO_ADDRESS IN ({address_list})
@@ -79,7 +96,14 @@ class FlipsideApi(object):
         else:
             string_limit = ""
         sql = f"""
-                SELECT *
+                SELECT TX_HASH,
+                BLOCK_TIMESTAMP,
+                FROM_ADDRESS,
+                TO_ADDRESS,
+                GAS_LIMIT,
+                GAS_USED,
+                TX_FEE,
+                MATIC_VALUE
                 FROM polygon.core.fact_transactions
                 WHERE FROM_ADDRESS IN ({address_list})
                 OR TO_ADDRESS IN ({address_list})
@@ -94,7 +118,14 @@ class FlipsideApi(object):
         else:
             string_limit = ""
         sql = f"""
-                SELECT *
+                SELECT TX_HASH,
+                BLOCK_TIMESTAMP,
+                FROM_ADDRESS,
+                TO_ADDRESS,
+                GAS_LIMIT,
+                GAS_USED,
+                TX_FEE,
+                ETH_VALUE
                 FROM arbitrum.core.fact_transactions
                 WHERE FROM_ADDRESS IN ({address_list})
                 OR TO_ADDRESS IN ({address_list})
@@ -109,7 +140,14 @@ class FlipsideApi(object):
         else:
             string_limit = ""
         sql = f"""
-                SELECT *
+                SELECT TX_HASH,
+                BLOCK_TIMESTAMP,
+                FROM_ADDRESS,
+                TO_ADDRESS,
+                GAS_LIMIT,
+                GAS_USED,
+                TX_FEE,
+                AVAX_VALUE
                 FROM avalanche.core.fact_transactions
                 WHERE FROM_ADDRESS IN ({address_list})
                 OR TO_ADDRESS IN ({address_list})
@@ -124,7 +162,13 @@ class FlipsideApi(object):
         else:
             string_limit = ""
         sql = f"""
-                    SELECT *
+                    SELECT TX_HASH,
+                    BLOCK_TIMESTAMP,
+                    FROM_ADDRESS,
+                    TO_ADDRESS,
+                    GAS_LIMIT,
+                    GAS_USED,
+                    TX_FEE
                     FROM gnosis.core.fact_transactions
                     WHERE FROM_ADDRESS IN ({address_list})
                     OR TO_ADDRESS IN ({address_list})
@@ -139,7 +183,14 @@ class FlipsideApi(object):
         else:
             string_limit = ""
         sql = f"""
-                    SELECT *
+                    SELECT TX_HASH,
+                    BLOCK_TIMESTAMP,
+                    FROM_ADDRESS,
+                    TO_ADDRESS,
+                    GAS_LIMIT,
+                    GAS_USED,
+                    TX_FEE,
+                    ETH_VALUE
                     FROM optimism.core.fact_transactions
                     WHERE FROM_ADDRESS IN ({address_list})
                     OR TO_ADDRESS IN ({address_list})
