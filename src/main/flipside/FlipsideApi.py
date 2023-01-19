@@ -116,6 +116,53 @@ class FlipsideApi(object):
                     """
         return sql
 
+    def get_cross_chain_address_labels_sql_query(self, df_address, limit=0):
+        address_list = self.get_string_address(df_address)
+        if limit != 0:
+            string_limit = f"LIMIT {limit}"
+        else:
+            string_limit = ""
+        sql = f"""
+                SELECT *
+                FROM crosschain.address_labels
+                WHERE ADDRESS IN ({address_list})
+                {string_limit};
+                """
+        return sql
+
+    def get_cross_chain_address_tags_sql_query(self, df_address, limit=0):
+        address_list = self.get_string_address(df_address)
+        if limit != 0:
+            string_limit = f"LIMIT {limit}"
+        else:
+            string_limit = ""
+        sql = f"""
+                SELECT *
+                FROM crosschain.core.address_labels
+                WHERE ADDRESS IN ({address_list})
+                {string_limit};
+                """
+        return sql
+
+    def get_price_feed_eth_ftm_sql_query(self, limit=0):
+        if limit != 0:
+            string_limit = f"LIMIT {limit}"
+        else:
+            string_limit = ""
+        sql = f"""
+                SELECT ID,
+                RECORDED_HOUR,
+                "OPEN"	
+                FROM crosschain.core.fact_hourly_prices
+                where	ID in ('ethereum', 'fantom')
+                AND RECORDED_HOUR > DATE(2023-12-11)
+                ORDER BY RECORDED_HOUR DESC
+                {string_limit};
+                """
+        return sql
+
+
+
 # # If the limit is reached in a 5-minute period, the sdk will exponentially back-off and retry the query up to the timeout_minutes parameter set when calling the query method.
 # query_result_set = sdk.query(
 #     sql,

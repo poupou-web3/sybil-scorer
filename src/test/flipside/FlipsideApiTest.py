@@ -55,6 +55,14 @@ class FlipsideApiTest(unittest.TestCase):
         sql = self.flipside_api.get_avalanche_transactions_sql_query(self.list_unique_address, limit=10)
         df = self.flipside_api.execute_query(sql)
         self.assertEqual(10, df.shape[0])
+    def test_execute_get_tags(self):
+        sql = self.flipside_api.get_cross_chain_address_tags_sql_query(self.list_unique_address, limit=10)
+        df = self.flipside_api.execute_query(sql)
+        self.assertEqual(10, df.shape[0])
+    def test_execute_get_labels(self):
+        sql = self.flipside_api.get_cross_chain_address_labels_sql_query(self.list_unique_address, limit=10)
+        df = self.flipside_api.execute_query(sql)
+        self.assertEqual(10, df.shape[0])
 
 
 
