@@ -16,6 +16,7 @@ class FlipsideApiTest(unittest.TestCase):
     api_key = os.environ['FLIPSIDE_API_KEY']
     flipside_api = FlipsideApi(api_key)
     PATH_TO_EXAMPLE = "../../../input_example"
+    PATH_TO_TX = "../../../data/transactions"
     INPUT_CSV = "input.csv"
     path_to_data = os.path.join(PATH_TO_EXAMPLE, INPUT_CSV)
     df_address = pd.read_csv(path_to_data)
@@ -81,12 +82,16 @@ class FlipsideApiTest(unittest.TestCase):
         df = self.flipside_api.execute_query(sql)
         self.assertEqual(10, df.shape[0])
 
-    def test_get_transactions(self):
-        df = self.flipside_api.get_transactions(
-            self.list_unique_address)
-        df_output = pd.read_csv(os.path.join('data/transactions/ethereum', "transactions.csv"))
-        df_input_address = pd.read_csv(os.path.join('input_example', "input.csv"))
+    def test_extract_transactions(self):
+        self.flipside_api.extract_transactions(self.PATH_TO_TX, self.list_unique_address)
+        df_output = pd.read_csv(os.path.join(os.path.join(self.PATH_TO_TX, "ethereum"), "transactions.csv"))
+        df_input_address = pd.read_csv(os.path.join(self.PATH_TO_EXAMPLE, "input.csv"))
         self.assertEqual(df_input_address.shape[0], df_output.ADDRESS.nunique())
+
+    def test_get_transactions_ethereum(self):
+        df_output = self.flipside_api.get_transactions(self.list_unique_address, "ethereum")
+        self.assertTrue(
+            '0xc1e0b64374095ae27ca4a98932f03fa3fcfbf60dcece1ca12c71015b21fbedb9' in df_output.tx_hash.values)
 
 
 if __name__ == '__main__':
