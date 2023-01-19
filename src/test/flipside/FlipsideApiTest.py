@@ -84,16 +84,18 @@ class FlipsideApiTest(unittest.TestCase):
 
     def test_extract_transactions(self):
         self.flipside_api.extract_transactions(self.PATH_TO_TX, self.list_unique_address)
-        df_output = pd.read_csv(os.path.join(os.path.join(self.PATH_TO_TX, "ethereum"), "transactions.csv"))
-        df_input_address = pd.read_csv(os.path.join(self.PATH_TO_EXAMPLE, "input.csv"))
-        self.assertEqual(df_input_address.shape[0], df_output.ADDRESS.nunique())
+        for network in ["ethereum", "polygon", "optimism", "arbitrum", "avalanche"]:
+            df_output = pd.read_csv(os.path.join(os.path.join(self.PATH_TO_TX, network), "transactions_0.csv"))
+            self.assertEqual(df_output.shape[1], 8)
+        df_output = pd.read_csv(os.path.join(os.path.join(self.PATH_TO_TX, "gnosis", "transactions_0.csv")))
+        self.assertEqual(df_output.shape[1], 7)
 
     def test_get_transactions_ethereum(self):
         df_output = self.flipside_api.get_transactions(self.list_unique_address, "ethereum")
         self.assertTrue(
             '0xc1e0b64374095ae27ca4a98932f03fa3fcfbf60dcece1ca12c71015b21fbedb9' in df_output.tx_hash.values)
 
-    def test_get_transactions_ethereum(self):
+    def test_get_transactions_polygon(self):
         df_output = self.flipside_api.get_transactions(self.list_unique_address, "polygon")
         self.assertTrue(
             '0xc1e0b64374095ae27ca4a98932f03fa3fcfbf60dcece1ca12c71015b21fbedb9' in df_output.tx_hash.values)

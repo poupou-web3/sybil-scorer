@@ -37,8 +37,11 @@ class FlipsideApi(object):
             q += 1
         for i in range(q):
             print(f"Extracting transactions for address: {i * self.MAX_ADDRESS} - {(i + 1) * self.MAX_ADDRESS}")
-            df = self.get_transactions(df_address[i * self.MAX_ADDRESS : (i + 1) * self.MAX_ADDRESS], network)
-            df.to_csv(os.path.join(extract_dir, f"transactions_{network}_{i}.csv"), index=False)
+            df = self.get_transactions(df_address[i * self.MAX_ADDRESS: (i + 1) * self.MAX_ADDRESS], network)
+            path_to_export = os.path.join(extract_dir, network)
+            if not os.path.exists(path_to_export):
+                os.makedirs(path_to_export)
+            df.to_csv(os.path.join(path_to_export, f"transactions_{i}.csv"), index=False)
 
     def get_transactions(self, df_address, network):
         if network == "ethereum":
