@@ -222,9 +222,9 @@ class FlipsideApi(object):
 
     def get_cross_chain_info_sql_query(self, df_address, info_type="labels", limit=0):
         address_list = self.get_string_address(df_address)
-        if info_type == "labels":
+        if info_type == "label":
             table_name = "crosschain.address_labels"
-        elif info_type == "tags":
+        elif info_type == "tag":
             table_name = "crosschain.address_tags"
         if limit != 0:
             string_limit = f"LIMIT {limit}"
@@ -239,23 +239,6 @@ class FlipsideApi(object):
                 """
         return sql
 
-    @staticmethod
-    def get_all_cross_chain_info_sql_query(info_type="labels", limit=0):
-        if info_type == "labels":
-            table_name = "crosschain.address_labels"
-        elif info_type == "tags":
-            table_name = "crosschain.address_tags"
-        if limit != 0:
-            string_limit = f"LIMIT {limit}"
-        else:
-            string_limit = ""
-
-        sql = f"""
-                SELECT *
-                FROM {table_name}
-                {string_limit};
-                """
-        return sql
 
     @staticmethod
     def get_price_feed_eth_ftm_sql_query(limit=0):
