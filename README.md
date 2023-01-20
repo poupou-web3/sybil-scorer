@@ -24,6 +24,9 @@ this retrieves tags and labels for all addresses found in the transactions folde
 ## Specifications
 [Spec.md](https://github.com/poupou-web3/cluster-scorer/blob/main/spec.md) describes which legos we should build
 
+## Lego example 
+https://github.com/Fraud-Detection-and-Defense/lego-docs
+
 ## Folder details
 Jupyter folder holds notebooks for data cleaning and data exploration
 
