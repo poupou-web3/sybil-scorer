@@ -1,5 +1,6 @@
 # cluster-scorer
 
+## Installation
 download data in https://huggingface.co/datasets/Poupou/Gitcoin-Grant-DataBuilder/tree/main
 
 extract zip to have 
@@ -18,12 +19,12 @@ The issue is that there are more than 75 000 address to query and only 10 000 AP
 
 
 and then [extract_tags_labels.py](https://github.com/poupou-web3/cluster-scorer/blob/main/src/main/extract_tags_labels.py)
-this retrieves tags and labels for all addresses found in the transactions folder
+this retrieves tags and labels for all addresses found in the transactions folder (not working to many addresses in unique_address WIP)
 
 
-[Spec.md](https://github.com/poupou-web3/cluster-scorer/blob/main/spec.md) decribes which legos we should build
+[Spec.md](https://github.com/poupou-web3/cluster-scorer/blob/main/spec.md) describes which legos we should build
 
-
+## Folder details
 Jupyter folder holds notebooks for data cleaning and data exploration
 
 src/main has many things I built in the previous hackhathon
