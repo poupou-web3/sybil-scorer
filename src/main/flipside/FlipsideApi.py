@@ -12,22 +12,29 @@ class FlipsideApi(object):
 
         # return up to 100,000 results per GET request on the query id
         self.PAGE_SIZE = 100000
+
+        # timeout in minutes
+        self.TIMEOUT_MINUTES = 4
         # return results of page 1
         self.PAGE_NUMBER = 1
         # max address to query
-        self.MAX_ADDRESS = 1000
+        self.MAX_ADDRESS = 100
 
     def execute_query(self, sql):
-        query_result_set = self.sdk.query(sql)
+        try:
+            query_result_set = self.sdk.query(sql,
+                                              page_size=self.PAGE_SIZE,
+                                              timeout_minutes=self.TIMEOUT_MINUTES)
+        except Exception as e:
+            print(e)
+            print(sql)
+            return pd.DataFrame()  # return empty dataframe
         return pd.DataFrame(query_result_set.records)
 
     def extract_transactions(self, extract_dir, df_address):
         list_network = ["ethereum", "polygon", "arbitrum", "avalanche", "gnosis", "optimism"]
         for network in list_network:
-            try:
-                self.extract_transactions_net(extract_dir, df_address, network)
-            except Exception as e:
-                print(e)
+            self.extract_transactions_net(extract_dir, df_address, network)
 
     def extract_transactions_net(self, extract_dir, df_address, network):
         print("Extracting transactions for network: ", network)
@@ -245,8 +252,6 @@ class FlipsideApi(object):
                 {string_limit};
                 """
         return sql
-
-
 
 # # If the limit is reached in a 5-minute period, the sdk will exponentially back-off and retry the query up to the timeout_minutes parameter set when calling the query method.
 # query_result_set = sdk.query(
