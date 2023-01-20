@@ -4,7 +4,7 @@ import sys
 import os
 from pathlib import Path
 
-absolute_path = os.fspath(Path.cwd().parent)
+absolute_path = os.fspath(Path.cwd().parent.parent)
 if absolute_path not in sys.path:
     sys.path.append(absolute_path)
 
@@ -32,12 +32,12 @@ list_address = np.concatenate(list_address)
 list_unique_address = np.unique(list_address.astype(str))
 
 print("Start extracting tags")
-sql_tag = flipside_api.get_cross_chain_address_tags_sql_query(list_unique_address)
+sql_tag = flipside_api.get_all_cross_chain_info_sql_query(info_type="tag", list_unique_address)
 df_tags = flipside_api.execute_query(sql_tag)
 print("End extracting tags")
 
 print("Start extracting labels")
-sql_labels = flipside_api.get_cross_chain_address_labels_sql_query(list_unique_address)
+sql_labels = flipside_api.get_all_cross_chain_info_sql_query(info_type="label", list_unique_address)
 df_labels = flipside_api.execute_query(sql_labels)
 print("End extracting labels")
 
