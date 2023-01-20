@@ -21,8 +21,11 @@ The issue is that there are more than 75 000 address to query and only 10 000 AP
 and then [extract_tags_labels.py](https://github.com/poupou-web3/cluster-scorer/blob/main/src/main/extract_tags_labels.py)
 this retrieves tags and labels for all addresses found in the transactions folder (not working to many addresses in unique_address WIP)
 
-
+## Specifications
 [Spec.md](https://github.com/poupou-web3/cluster-scorer/blob/main/spec.md) describes which legos we should build
+
+## Lego example 
+https://github.com/Fraud-Detection-and-Defense/lego-docs
 
 ## Folder details
 Jupyter folder holds notebooks for data cleaning and data exploration
