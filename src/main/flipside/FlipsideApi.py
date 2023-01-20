@@ -9,16 +9,28 @@ class FlipsideApi(object):
 
         # Initialize `ShroomDK`
         self.sdk = ShroomDK(api_key)
-
         # return up to 100,000 results per GET request on the query id
         self.PAGE_SIZE = 100000
-
         # timeout in minutes
         self.TIMEOUT_MINUTES = 4
         # return results of page 1
         self.PAGE_NUMBER = 1
         # max address to query
         self.MAX_ADDRESS = 100
+
+    def __init__(self, api_key, page_size=100000, timeout_minutes=4, page_number=1, max_address=100):
+        self.api_key = api_key
+
+        # Initialize `ShroomDK`
+        self.sdk = ShroomDK(api_key)
+        # return up to 100,000 results per GET request on the query id
+        self.PAGE_SIZE = page_size
+        # timeout in minutes
+        self.TIMEOUT_MINUTES = timeout_minutes
+        # return results of page 1
+        self.PAGE_NUMBER = page_number
+        # max address to query
+        self.MAX_ADDRESS = max_address
 
     def execute_query(self, sql):
         try:
