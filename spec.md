@@ -47,15 +47,14 @@ because it is the transaction that then allows the user to perform actions on th
 
 Input:
 - 1 address
-- Grant round and project_id
+- List of addresses involved in the round or project
 - Data folder 
   - Transactions
-  - Contributions
-  - Applications
 
 Output:
 - boolean is_suspicious_seed (if the address was funded by an address that is reoccuring as seeding in the round/project)
 
+**TO BE TESTED**
 
 
 ### 2. Transaction similitude
@@ -64,11 +63,9 @@ This lego analysed the behavior of all the transactions performed by an address 
 
 Input:
 - 1 address
-- Grant round and project_id
+- List of addresses involved in the round or project
 - Data folder 
   - Transactions
-  - Contributions
-  - Applications
 
 Output:
 - boolean has_similitude_address 
