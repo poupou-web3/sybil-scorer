@@ -1,4 +1,3 @@
-from src.main.flipside.FlipsideApi import FlipsideApi
 import pandas as pd
 import sys
 import os
