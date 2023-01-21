@@ -119,7 +119,7 @@ class FlipsideApi(object):
 
         """
         for address in np_address:
-            df_address_transactions = df[np.logical_and(
+            df_address_transactions = df[np.logical_or(
                 df.from_address == address, df.to_address == address)]
             path_to_export = os.path.join(extract_dir, network)
             csv_file = os.path.join(path_to_export, f"{address}_tx.csv")
