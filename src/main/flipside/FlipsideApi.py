@@ -1,6 +1,14 @@
 from shroomdk import ShroomDK
 import pandas as pd
 import os
+import numpy as np
+
+
+def save_csv(df, path_to_export, csv_file):
+    if not os.path.exists(path_to_export):
+        os.makedirs(path_to_export)
+    df.to_csv(csv_file, index=False)
+
 
 class FlipsideApi(object):
 
@@ -44,7 +52,8 @@ class FlipsideApi(object):
         return pd.DataFrame(query_result_set.records)
 
     def extract_transactions(self, extract_dir, df_address):
-        list_network = ["ethereum", "polygon", "arbitrum", "avalanche", "gnosis", "optimism"]
+        list_network = ["ethereum", "polygon",
+                        "arbitrum", "avalanche", "gnosis", "optimism"]
         for network in list_network:
             self.extract_transactions_net(extract_dir, df_address, network)
 
@@ -55,12 +64,18 @@ class FlipsideApi(object):
         if r != 0:
             q += 1
         for i in range(q):
-            print(f"Extracting transactions for address: {i * self.MAX_ADDRESS} - {(i + 1) * self.MAX_ADDRESS}")
-            df = self.get_transactions(df_address[i * self.MAX_ADDRESS: (i + 1) * self.MAX_ADDRESS], network)
-            path_to_export = os.path.join(extract_dir, network)
-            if not os.path.exists(path_to_export):
-                os.makedirs(path_to_export)
-            df.to_csv(os.path.join(path_to_export, f"transactions_{i}.csv"), index=False)
+            start_index = i * self.MAX_ADDRESS
+            end_index = (i + 1) * self.MAX_ADDRESS
+            print(
+                f"Extracting transactions for address: {start_index} - {end_index}")
+            df = self.get_transactions(
+                df_address[start_index: end_index], network)
+            if df.shape[0] == 0:
+                self.extract_transactions_rec(
+                    df_address, start_index, end_index, network)
+            else:
+                self.export_address(
+                    df, df_address[start_index: end_index], extract_dir, network)
 
     def get_transactions(self, df_address, network):
         if network == "ethereum":
@@ -80,6 +95,59 @@ class FlipsideApi(object):
 
         df = self.execute_query(sql)
         return df
+
+    @staticmethod
+    def export_address(df, np_address, extract_dir, network):
+        """
+        Export the dataframe to a csv file
+
+        Change the idea and exporting straight to an account based csv for easier csv manipulation from other tools
+        If there is no transactions them the file is not created, creating empty file is useless.
+        Parameters
+        ----------
+        df : pd.DataFrame
+            Dataframe containing the transactions of potentially many addresses
+        np_address : numpy.ndarray
+            Array containing the addresses
+        extract_dir : str
+            Directory where to export the csv file
+        network : str
+            Network of the transactions
+
+        Returns
+        -------
+
+        """
+        for address in np_address:
+            df_address_transactions = df[np.logical_and(
+                df.from_address == address, df.to_address == address)]
+            path_to_export = os.path.join(extract_dir, network)
+            csv_file = os.path.join(path_to_export, f"{address}_tx.csv")
+            if df_address_transactions.shape[0] > 0:
+                save_csv(df_address_transactions, path_to_export, csv_file)
+            else:
+                print(f"No transactions found for address {address}")
+
+    def extract_transactions_rec(self, df_address, start_index, end_index, network, extract_dir):
+        end_first_slice = (start_index + end_index) // 2
+        print("Retrying with smaller query")
+        self.extract_transactions_between_rec(
+            df_address, start_index, end_first_slice, network, extract_dir)
+        self.extract_transactions_between_rec(
+            df_address, end_first_slice, end_index, network, extract_dir)
+
+    def extract_transactions_between_rec(self, df_address, start_index, end_index, network, extract_dir):
+        print(
+            f"Extracting transactions for address: {start_index} - {end_index}")
+        df = self.get_transactions(df_address[start_index: end_index], network)
+        if df.shape[0] == 0:
+            # recursive call
+            print("Retrying with smaller query")
+            self.extract_transactions_rec(
+                self, df_address, start_index, end_index, network, extract_dir)
+        else:
+            self.export_address(
+                df, df_address[start_index: end_index], extract_dir, network)
 
     @staticmethod
     def get_string_address(df_address):
@@ -257,14 +325,3 @@ class FlipsideApi(object):
                 {string_limit};
                 """
         return sql
-
-# # If the limit is reached in a 5-minute period, the sdk will exponentially back-off and retry the query up to the timeout_minutes parameter set when calling the query method.
-# query_result_set = sdk.query(
-#     sql,
-#     ttl_minutes=60,
-#     cached=True,
-#     timeout_minutes=20,
-#     retry_interval_seconds=1,
-#     page_size=5,
-#     page_number=2,
-# )
