@@ -12,20 +12,6 @@ def save_csv(df, path_to_export, csv_file):
 
 class FlipsideApi(object):
 
-    def __init__(self, api_key):
-        self.api_key = api_key
-
-        # Initialize `ShroomDK`
-        self.sdk = ShroomDK(api_key)
-        # return up to 100,000 results per GET request on the query id
-        self.PAGE_SIZE = 100000
-        # timeout in minutes
-        self.TIMEOUT_MINUTES = 4
-        # return results of page 1
-        self.PAGE_NUMBER = 1
-        # max address to query
-        self.MAX_ADDRESS = 100
-
     def __init__(self, api_key, page_size=100000, timeout_minutes=4, page_number=1, max_address=100):
         self.api_key = api_key
 
@@ -72,7 +58,7 @@ class FlipsideApi(object):
                 df_address[start_index: end_index], network)
             if df.shape[0] == 0:
                 self.extract_transactions_rec(
-                    df_address, start_index, end_index, network)
+                    df_address, start_index, end_index, network, extract_dir)
             else:
                 self.export_address(
                     df, df_address[start_index: end_index], extract_dir, network)
@@ -144,7 +130,7 @@ class FlipsideApi(object):
             # recursive call
             print("Retrying with smaller query")
             self.extract_transactions_rec(
-                self, df_address, start_index, end_index, network, extract_dir)
+                df_address, start_index, end_index, network, extract_dir)
         else:
             self.export_address(
                 df, df_address[start_index: end_index], extract_dir, network)
