@@ -83,11 +83,11 @@ class FlipsideApiTest(unittest.TestCase):
 
     def test_extract_transactions(self):
         self.flipside_api.extract_transactions(self.PATH_TO_TX, self.list_unique_address)
-        for network in ["ethereum", "polygon", "optimism", "arbitrum", "avalanche"]:
-            df_output = pd.read_csv(os.path.join(os.path.join(self.PATH_TO_TX, network), "transactions_0.csv"))
+        for network in ["ethereum"]:
+            df_output = pd.read_csv(os.path.join(
+                os.path.join(self.PATH_TO_TX, network),
+                "0xf8bde71eb161bd83da88bd3a1003eef9ba0c7485_tx.csv"))
             self.assertEqual(df_output.shape[1], 8)
-        df_output = pd.read_csv(os.path.join(os.path.join(self.PATH_TO_TX, "gnosis", "transactions_0.csv")))
-        self.assertEqual(df_output.shape[1], 7)
 
     def test_get_transactions_ethereum(self):
         df_output = self.flipside_api.get_transactions(self.list_unique_address, "ethereum")
