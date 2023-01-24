@@ -42,3 +42,4 @@ these are methods and scripts that I used to extract data using etherscan and po
 the Flipside repo holds the class that allows to query the FlipsideAPI. It is still in dev.
 
 
+tree .\reader-whl\ /F

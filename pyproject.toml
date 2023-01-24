@@ -1,3 +1,40 @@
 [build-system]
-requires = ['setuptools>=42']
+requires = ['setuptools>=61.0.0', "wheel"]
 build-backend = 'setuptools.build_meta'
+
+[project]
+name = "sybil-scorer"
+version = "0.0.0-beta1"
+description = "A sybil scoring tool"
+readme = "README.md"
+authors = [{ name = "Poupou", email = "poupou-web3@protonmail.com" }]
+license = { file = "LICENSE" }
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+]
+keywords = ["Sybil", "OSS", "Gitcoin", "Quadratic]
+dependencies = [
+    "pandas==1.5.2",
+    "tsfresh==0.20.0",
+    "scikit-learn==1.2.0",
+    "seaborn==0.12.2",
+    "shroomdk==1.0.2",
+    'tomli; python_version < "3.11"',
+]
+requires-python = ">=3.10"
+
+[project.optional-dependencies]
+dev = ["black", 
+    "jupyterlab==3.5.2", 
+    "ipykernel==6.20.2",  
+    "pip-tools", 
+    "pytest==7.2.1"]
+
+[project.urls]
+Homepage = "https://github.com/poupou-web3/cluster-scorer"
+
+[tool.setuptools.packages.find]
+where = ["src/main"]  # list of folders that contain the packages (["."] by default)
+include = ["flipside", "legos"]
