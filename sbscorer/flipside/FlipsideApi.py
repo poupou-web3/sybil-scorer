@@ -1,7 +1,8 @@
-from shroomdk import ShroomDK
-import pandas as pd
 import os
+
 import numpy as np
+import pandas as pd
+from shroomdk import ShroomDK
 
 
 def save_csv(df, path_to_export, csv_file):
@@ -274,12 +275,14 @@ class FlipsideApi(object):
                     """
         return sql
 
-    def get_cross_chain_info_sql_query(self, df_address, info_type="labels", limit=0):
+    def get_cross_chain_info_sql_query(self, df_address, info_type="label", limit=0):
         address_list = self.get_string_address(df_address)
         if info_type == "label":
             table_name = "crosschain.address_labels"
         elif info_type == "tag":
             table_name = "crosschain.address_tags"
+        else:
+            Exception("Invalid info type")
         if limit != 0:
             string_limit = f"LIMIT {limit}"
         else:
@@ -292,7 +295,6 @@ class FlipsideApi(object):
                 {string_limit};
                 """
         return sql
-
 
     @staticmethod
     def get_price_feed_eth_ftm_sql_query(limit=0):

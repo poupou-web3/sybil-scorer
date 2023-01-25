@@ -9,13 +9,13 @@ import pandas as pd
 import numpy as np
 import os
 
-from src.main.features.conf import FC_TSFRESH
+from sbscorer.features.conf import FC_TSFRESH
 from tsfresh import extract_features
 from tsfresh.utilities.dataframe_functions import impute
 
-from src.main.utils.processing import *
-from src.main.features.conf import *
-from src.main.features.create_features import *
+from sbscorer.utils.processing import *
+from sbscorer.features.conf import *
+from sbscorer.features.create_features import *
 
 N_FILES = -1
 ETH_DECIMAL = 10E18

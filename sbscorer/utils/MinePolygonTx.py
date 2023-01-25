@@ -1,5 +1,5 @@
 from polygonscan import PolygonScan
-from src.main.utils.MineTx import MineTx
+from sbscorer.utils.MineTx import MineTx
 
 
 class MinePolygonTx(MineTx):

@@ -7,7 +7,7 @@ absolute_path = os.fspath(Path.cwd().parent)
 if absolute_path not in sys.path:
     sys.path.append(absolute_path)
 print(sys.path)
-from src.main.utils.MineEthTx import MineEthTx
+from sbscorer.utils.MineEthTx import MineEthTx
 
 
 API_KEY = '1NAV5EVGAV9S7ZJIKP586RT8U1X4CWDSJ3'

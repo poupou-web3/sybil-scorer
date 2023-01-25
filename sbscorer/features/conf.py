@@ -1,5 +1,5 @@
 import time
-from src.main.features.custom.extract import time_since_first, time_since_last, ratio_tx_time_since_time, ratio_tx_time_since_last_tx, ratio_above_mean, ratio_above, ratio_between_quantile
+from sbscorer.features.custom.extract import time_since_first, time_since_last, ratio_tx_time_since_time, ratio_tx_time_since_last_tx, ratio_above_mean, ratio_above, ratio_between_quantile
 
 
 DAY = 3600

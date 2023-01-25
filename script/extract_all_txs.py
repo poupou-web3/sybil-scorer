@@ -7,7 +7,7 @@ absolute_path = os.fspath(Path.cwd().parent.parent)
 if absolute_path not in sys.path:
     sys.path.append(absolute_path)
 
-from src.main.flipside.FlipsideApi import FlipsideApi
+from sbscorer.flipside.FlipsideApi import FlipsideApi
 
 
 api_key = os.environ['FLIPSIDE_API_KEY']

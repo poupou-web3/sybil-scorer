@@ -7,7 +7,7 @@ absolute_path = os.fspath(Path.cwd().parent)
 if absolute_path not in sys.path:
     sys.path.append(absolute_path)
 print(sys.path)
-from src.main.utils.MinePolygonTx import MinePolygonTx
+from sbscorer.utils.MinePolygonTx import MinePolygonTx
 
 
 

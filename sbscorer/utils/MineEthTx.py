@@ -1,5 +1,5 @@
 from etherscan import Etherscan
-from src.main.utils.MineTx import MineTx
+from sbscorer.utils.MineTx import MineTx
 
 
 class MineEthTx(MineTx):
