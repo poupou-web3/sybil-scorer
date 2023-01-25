@@ -14,7 +14,7 @@ classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
 ]
-keywords = ["Sybil", "OSS", "Gitcoin", "Quadratic]
+keywords = ["Sybil", "OSS", "Gitcoin", "Quadratic"]
 dependencies = [
     "pandas==1.5.2",
     "tsfresh==0.20.0",
@@ -26,10 +26,10 @@ dependencies = [
 requires-python = ">=3.10"
 
 [project.optional-dependencies]
-dev = ["black", 
-    "jupyterlab==3.5.2", 
-    "ipykernel==6.20.2",  
-    "pip-tools", 
+dev = ["black",
+    "jupyterlab==3.5.2",
+    "ipykernel==6.20.2",
+    "pip-tools",
     "pytest==7.2.1"]
 
 [project.urls]
