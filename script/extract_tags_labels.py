@@ -32,12 +32,12 @@ list_address = np.concatenate(list_address)
 list_unique_address = np.unique(list_address.astype(str))
 
 print("Start extracting tags")
-sql_tag = flipside_api.get_all_cross_chain_info_sql_query(info_type="tag", list_unique_address)
+sql_tag = flipside_api.get_all_cross_chain_info_sql_query(list_unique_address, info_type="tag")
 df_tags = flipside_api.execute_query(sql_tag)
 print("End extracting tags")
 
 print("Start extracting labels")
-sql_labels = flipside_api.get_all_cross_chain_info_sql_query(info_type="label", list_unique_address)
+sql_labels = flipside_api.get_all_cross_chain_info_sql_query(list_unique_address, info_type="label")
 df_labels = flipside_api.execute_query(sql_labels)
 print("End extracting labels")
 

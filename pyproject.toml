@@ -4,7 +4,7 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = "sybil-scorer"
-version = "0.0.0-beta1"
+version = "0.0.0-beta2"
 description = "A sybil scoring tool"
 readme = "README.md"
 authors = [{ name = "Poupou", email = "poupou-web3@protonmail.com" }]
@@ -36,5 +36,5 @@ dev = ["black",
 Homepage = "https://github.com/poupou-web3/cluster-scorer"
 
 [tool.setuptools.packages.find]
-where = ["src/main"]  # list of folders that contain the packages (["."] by default)
+where = ["sbscorer"]  # list of folders that contain the packages (["."] by default)
 include = ["flipside", "legos"]
