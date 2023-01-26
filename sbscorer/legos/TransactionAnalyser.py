@@ -1,8 +1,8 @@
-import pandas as pd
-import numpy as np
-import sys
 import os
+import sys
 from pathlib import Path
+
+import numpy as np
 
 absolute_path = os.fspath(Path.cwd().parent.parent.parent)
 if absolute_path not in sys.path:
@@ -16,6 +16,8 @@ class TransactionAnalyser(object):
         # holds a df of address/seed wallet so we don't have to create it each time
         self.df_seed_wallet = None
         self.df_address = df_address
+        # We use a df address so we can load all transactions in memmory and then change the address list easily
+        # for example to calculate on a specific project
 
     def has_same_seed(self, address):
         """Return if the address has the same seed wallet as one of the seed wallet of the df_transactions
@@ -100,10 +102,10 @@ class TransactionAnalyser(object):
     @staticmethod
     def get_array_transactions(df_address_transactions, address, algo_type="address_only"):
         if algo_type == "address_only":
-            array_transactions = df_address_transactions.loc[:, ['from_address', 'to_address']]\
+            array_transactions = df_address_transactions.loc[:, ['from_address', 'to_address']] \
                 .replace(address, 'x').values.flatten()
         elif algo_type == "address_and_value":
-            array_transactions = df_address_transactions.loc[:, ['from_address', 'value', 'to_address']]\
+            array_transactions = df_address_transactions.loc[:, ['from_address', 'value', 'to_address']] \
                 .replace(address, 'x').values.flatten()
         else:
             raise ValueError("algo_type must be either address_only or address_and_value")
