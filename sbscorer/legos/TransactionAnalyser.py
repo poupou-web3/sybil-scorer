@@ -43,8 +43,9 @@ class TransactionAnalyser(object):
         return df_same_seed.shape[0] > 0
 
     def set_seed_wallet(self):
-        self.df_seed_wallet = self.df_transactions.groupby('to_address').sort_values(
-            'block_timestamp', ascending=True).loc['from_address', 'to_address'].first()
+        self.df_seed_wallet = \
+            self.df_transactions.sort_values('block_timestamp', ascending=True).groupby('EOA').first().loc[
+                'from_address', 'to_address']
 
     def transaction_similitude(self, address, algo_type="address_only", char_tolerance=0):
         """
