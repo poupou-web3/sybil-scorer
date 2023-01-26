@@ -5,6 +5,9 @@ api_key_eth.txt
 
 data/*
 vScorer
+vscorer
+vTest
+vPypi
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
