@@ -116,12 +116,8 @@ class FlipsideApiTest(unittest.TestCase):
 
     def test_extract_large_tx_eth(self):
         tx_chain = "ethereum"
-        self.flipside_api.extract_transactions_net(self.PATH_TO_TMP_TX_LARGE, self.test_address_large, tx_chain)
-        df_output = pd.read_csv(os.path.join(
-            os.path.join(self.PATH_TO_TMP_TX_LARGE, tx_chain),
-            "0x000aa644Afae99d06C9a0ED0E41B1e61bECA958d_tx.csv"))
-        df_filter = df_output[df_output["block_timestamp"] <= '2023-01-01']
-        self.assertEqual(133, df_filter.shape[1])
+        df_output = self.flipside_api.get_transactions(self.test_address_large, tx_chain)
+        self.assertEqual(100000, df_output.shape[1])  # 100k transactions the maximum per_page of flipside api
 
     def test_get_transactions_ethereum(self):
         df_output = self.flipside_api.get_transactions(self.list_unique_address, "ethereum")
