@@ -96,15 +96,6 @@ class FlipsideApiTest(unittest.TestCase):
         df = self.flipside_api.execute_query(sql)
         self.assertEqual(0, df.shape[1])
 
-    @unittest.skip("TODO change test very long running")
-    def test_extract_transactions(self):
-        self.flipside_api.extract_transactions(self.PATH_TO_TMP_TX, self.list_unique_address)
-        for network in ["ethereum"]:
-            df_output = pd.read_csv(os.path.join(
-                os.path.join(self.PATH_TO_TMP_TX, network),
-                "0xf8bde71eb161bd83da88bd3a1003eef9ba0c7485_tx.csv"))
-            self.assertEqual(df_output.shape[1], 8)
-
     def test_extract_tx_eth(self):
         tx_chain = "ethereum"
         self.flipside_api.extract_transactions_net(self.PATH_TO_TMP_TX, self.test_address, tx_chain)
