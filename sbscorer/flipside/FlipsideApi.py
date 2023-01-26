@@ -38,15 +38,15 @@ class FlipsideApi(object):
             return pd.DataFrame()  # return empty dataframe
         return pd.DataFrame(query_result_set.records)
 
-    def extract_transactions(self, extract_dir, df_address):
+    def extract_transactions(self, extract_dir, array_address):
         list_network = ["ethereum", "polygon",
                         "arbitrum", "avalanche", "gnosis", "optimism"]
         for network in list_network:
-            self.extract_transactions_net(extract_dir, df_address, network)
+            self.extract_transactions_net(extract_dir, array_address, network)
 
-    def extract_transactions_net(self, extract_dir, df_address, network):
+    def extract_transactions_net(self, extract_dir, array_address, network):
         print("Extracting transactions for network: ", network)
-        len_address = len(df_address)
+        len_address = len(array_address)
         q, r = divmod(len_address, self.MAX_ADDRESS)
         if r != 0:
             q += 1
@@ -56,27 +56,27 @@ class FlipsideApi(object):
             print(
                 f"Extracting transactions for address: {start_index} - {end_index}")
             df = self.get_transactions(
-                df_address[start_index: end_index], network)
-            if df.shape[0] == 0:
+                array_address[start_index: end_index], network)
+            if df.shape[0] == 0:  # retry with smaller query
                 self.extract_transactions_rec(
-                    df_address, start_index, end_index, network, extract_dir)
+                    array_address, start_index, end_index, network, extract_dir)
             else:
                 self.export_address(
-                    df, df_address[start_index: end_index], extract_dir, network)
+                    df, array_address[start_index: end_index], extract_dir, network)
 
-    def get_transactions(self, df_address, network):
+    def get_transactions(self, array_address, network):
         if network == "ethereum":
-            sql = self.get_eth_transactions_sql_query(df_address)
+            sql = self.get_eth_transactions_sql_query(array_address)
         elif network == "polygon":
-            sql = self.get_polygon_transactions_sql_query(df_address)
+            sql = self.get_polygon_transactions_sql_query(array_address)
         elif network == "arbitrum":
-            sql = self.get_arbitrum_transactions_sql_query(df_address)
+            sql = self.get_arbitrum_transactions_sql_query(array_address)
         elif network == "avalanche":
-            sql = self.get_avalanche_transactions_sql_query(df_address)
+            sql = self.get_avalanche_transactions_sql_query(array_address)
         elif network == "gnosis":
-            sql = self.get_gnosis_transactions_sql_query(df_address)
+            sql = self.get_gnosis_transactions_sql_query(array_address)
         elif network == "optimism":
-            sql = self.get_optimism_transactions_sql_query(df_address)
+            sql = self.get_optimism_transactions_sql_query(array_address)
         else:
             raise Exception("Network not supported")
 
@@ -115,37 +115,37 @@ class FlipsideApi(object):
             else:
                 print(f"No transactions found for address {address}")
 
-    def extract_transactions_rec(self, df_address, start_index, end_index, network, extract_dir):
+    def extract_transactions_rec(self, array_address, start_index, end_index, network, extract_dir):
         end_first_slice = (start_index + end_index) // 2
         print("Retrying with smaller query")
         self.extract_transactions_between_rec(
-            df_address, start_index, end_first_slice, network, extract_dir)
+            array_address, start_index, end_first_slice, network, extract_dir)
         self.extract_transactions_between_rec(
-            df_address, end_first_slice, end_index, network, extract_dir)
+            array_address, end_first_slice, end_index, network, extract_dir)
 
-    def extract_transactions_between_rec(self, df_address, start_index, end_index, network, extract_dir):
+    def extract_transactions_between_rec(self, array_address, start_index, end_index, network, extract_dir):
         print(
             f"Extracting transactions for address: {start_index} - {end_index}")
-        df = self.get_transactions(df_address[start_index: end_index], network)
+        df = self.get_transactions(array_address[start_index: end_index], network)
         if df.shape[0] == 0:
             # recursive call
             print("Retrying with smaller query")
             self.extract_transactions_rec(
-                df_address, start_index, end_index, network, extract_dir)
+                array_address, start_index, end_index, network, extract_dir)
         else:
             self.export_address(
-                df, df_address[start_index: end_index], extract_dir, network)
+                df, array_address[start_index: end_index], extract_dir, network)
 
     @staticmethod
-    def get_string_address(df_address):
+    def get_string_address(array_address):
         lower_str = ""
-        for add in df_address:
+        for add in array_address:
             lower_str += f'LOWER(\'{add}\'),'
         lower_str = lower_str[:-1]
         return lower_str
 
-    def get_eth_transactions_sql_query(self, df_address, limit=0):
-        address_list = self.get_string_address(df_address)
+    def get_eth_transactions_sql_query(self, array_address, limit=0):
+        str_list_add = self.get_string_address(array_address)
         if limit != 0:
             string_limit = f"LIMIT {limit}"
         else:
@@ -160,14 +160,14 @@ class FlipsideApi(object):
                 TX_FEE,
                 ETH_VALUE
                 FROM ethereum.core.fact_transactions
-                WHERE FROM_ADDRESS IN ({address_list})
-                OR TO_ADDRESS IN ({address_list})
+                WHERE FROM_ADDRESS IN ({str_list_add})
+                OR TO_ADDRESS IN ({str_list_add})
                 {string_limit};
                 """
         return sql
 
-    def get_polygon_transactions_sql_query(self, df_address, limit=0):
-        address_list = self.get_string_address(df_address)
+    def get_polygon_transactions_sql_query(self, array_address, limit=0):
+        str_list_add = self.get_string_address(array_address)
         if limit != 0:
             string_limit = f"LIMIT {limit}"
         else:
@@ -182,14 +182,14 @@ class FlipsideApi(object):
                 TX_FEE,
                 MATIC_VALUE
                 FROM polygon.core.fact_transactions
-                WHERE FROM_ADDRESS IN ({address_list})
-                OR TO_ADDRESS IN ({address_list})
+                WHERE FROM_ADDRESS IN ({str_list_add})
+                OR TO_ADDRESS IN ({str_list_add})
                 {string_limit};
                 """
         return sql
 
-    def get_arbitrum_transactions_sql_query(self, df_address, limit=0):
-        address_list = self.get_string_address(df_address)
+    def get_arbitrum_transactions_sql_query(self, array_address, limit=0):
+        str_list_add = self.get_string_address(array_address)
         if limit != 0:
             string_limit = f"LIMIT {limit}"
         else:
@@ -204,14 +204,14 @@ class FlipsideApi(object):
                 TX_FEE,
                 ETH_VALUE
                 FROM arbitrum.core.fact_transactions
-                WHERE FROM_ADDRESS IN ({address_list})
-                OR TO_ADDRESS IN ({address_list})
+                WHERE FROM_ADDRESS IN ({str_list_add})
+                OR TO_ADDRESS IN ({str_list_add})
                 {string_limit};
                 """
         return sql
 
-    def get_avalanche_transactions_sql_query(self, df_address, limit=0):
-        address_list = self.get_string_address(df_address)
+    def get_avalanche_transactions_sql_query(self, array_address, limit=0):
+        str_list_add = self.get_string_address(array_address)
         if limit != 0:
             string_limit = f"LIMIT {limit}"
         else:
@@ -226,14 +226,14 @@ class FlipsideApi(object):
                 TX_FEE,
                 AVAX_VALUE
                 FROM avalanche.core.fact_transactions
-                WHERE FROM_ADDRESS IN ({address_list})
-                OR TO_ADDRESS IN ({address_list})
+                WHERE FROM_ADDRESS IN ({str_list_add})
+                OR TO_ADDRESS IN ({str_list_add})
                 {string_limit};
                 """
         return sql
 
-    def get_gnosis_transactions_sql_query(self, df_address, limit=0):
-        address_list = self.get_string_address(df_address)
+    def get_gnosis_transactions_sql_query(self, array_address, limit=0):
+        str_list_add = self.get_string_address(array_address)
         if limit != 0:
             string_limit = f"LIMIT {limit}"
         else:
@@ -247,14 +247,14 @@ class FlipsideApi(object):
                     GAS_USED,
                     TX_FEE
                     FROM gnosis.core.fact_transactions
-                    WHERE FROM_ADDRESS IN ({address_list})
-                    OR TO_ADDRESS IN ({address_list})
+                    WHERE FROM_ADDRESS IN ({str_list_add})
+                    OR TO_ADDRESS IN ({str_list_add})
                     {string_limit};
                     """
         return sql
 
-    def get_optimism_transactions_sql_query(self, df_address, limit=0):
-        address_list = self.get_string_address(df_address)
+    def get_optimism_transactions_sql_query(self, array_address, limit=0):
+        str_list_add = self.get_string_address(array_address)
         if limit != 0:
             string_limit = f"LIMIT {limit}"
         else:
@@ -269,14 +269,14 @@ class FlipsideApi(object):
                     TX_FEE,
                     ETH_VALUE
                     FROM optimism.core.fact_transactions
-                    WHERE FROM_ADDRESS IN ({address_list})
-                    OR TO_ADDRESS IN ({address_list})
+                    WHERE FROM_ADDRESS IN ({str_list_add})
+                    OR TO_ADDRESS IN ({str_list_add})
                     {string_limit};
                     """
         return sql
 
-    def get_cross_chain_info_sql_query(self, df_address, info_type="label", limit=0):
-        address_list = self.get_string_address(df_address)
+    def get_cross_chain_info_sql_query(self, array_address, info_type="label", limit=0):
+        str_list_add = self.get_string_address(array_address)
         if info_type == "label":
             table_name = "crosschain.address_labels"
         elif info_type == "tag":
@@ -291,7 +291,7 @@ class FlipsideApi(object):
         sql = f"""
                 SELECT *
                 FROM {table_name}
-                WHERE ADDRESS IN ({address_list})
+                WHERE ADDRESS IN ({str_list_add})
                 {string_limit};
                 """
         return sql

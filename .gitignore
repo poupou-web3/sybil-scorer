@@ -8,6 +8,7 @@ vScorer
 vscorer
 vTest
 vPypi
+test/resources/tmp
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -15,12 +15,16 @@ if absolute_path not in sys.path:
 class FlipsideApiTest(unittest.TestCase):
     api_key = os.environ['FLIPSIDE_API_KEY']
     flipside_api = FlipsideApi(api_key)
-    PATH_TO_EXAMPLE = "../../input_example"
-    PATH_TO_TX = "../../data/transactions"
-    INPUT_CSV = "input.csv"
-    path_to_data = os.path.join(PATH_TO_EXAMPLE, INPUT_CSV)
-    df_address = pd.read_csv(path_to_data)
+    PATH_TO_RESOURCES = "../resources"
+    PATH_TO_TEST_ADDRESS = os.path.join(PATH_TO_RESOURCES, "test_address")
+    PATH_TO_TMP_TX = os.path.join(PATH_TO_RESOURCES, "tmp/transactions")
+    INPUT_CSV = "address.csv"
+    TEST_CSV_ADD = "flipside_test_address.csv"
+
+    df_address = pd.read_csv(os.path.join(PATH_TO_TEST_ADDRESS, INPUT_CSV))
     list_unique_address = df_address.address.unique()
+
+    df_test_address = pd.read_csv(os.path.join(PATH_TO_TEST_ADDRESS, TEST_CSV_ADD))
 
     def test_get_string_address(self):
         string_add = self.flipside_api.get_string_address(
@@ -88,12 +92,22 @@ class FlipsideApiTest(unittest.TestCase):
 
     @unittest.skip("TODO change test very long running")
     def test_extract_transactions(self):
-        self.flipside_api.extract_transactions(self.PATH_TO_TX, self.list_unique_address)
+        self.flipside_api.extract_transactions(self.PATH_TO_TMP_TX, self.list_unique_address)
         for network in ["ethereum"]:
             df_output = pd.read_csv(os.path.join(
-                os.path.join(self.PATH_TO_TX, network),
+                os.path.join(self.PATH_TO_TMP_TX, network),
                 "0xf8bde71eb161bd83da88bd3a1003eef9ba0c7485_tx.csv"))
             self.assertEqual(df_output.shape[1], 8)
+
+    @unittest.skip("TODO wait fix")
+    def test_extract_tx_eth(self):
+        tx_chain = "ethereum"
+        self.flipside_api.extract_transactions_net(self.PATH_TO_TMP_TX, self.df_test_address, tx_chain)
+        df_output = pd.read_csv(os.path.join(
+            os.path.join(self.PATH_TO_TMP_TX, tx_chain),
+            "0x000aa644Afae99d06C9a0ED0E41B1e61bECA958d.csv"))
+        df_filter = df_output  # TODO filter before 25 jan 2022
+        self.assertEqual(135, df_filter.shape[1])
 
     def test_get_transactions_ethereum(self):
         df_output = self.flipside_api.get_transactions(self.list_unique_address, "ethereum")
