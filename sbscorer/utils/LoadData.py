@@ -17,10 +17,6 @@ class LoadData(object):
         return df
 
     @staticmethod
-    def load_df_transactions(param, tx_chain):
-        pass
-
-    @staticmethod
     def get_files(path, chain):
         path_to_csv = os.path.join(path, chain)
         files = os.listdir(path_to_csv)
