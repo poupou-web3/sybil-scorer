@@ -13,7 +13,8 @@ def save_csv(df, path_to_export, csv_file):
 
 class FlipsideApi(object):
 
-    def __init__(self, api_key, page_size=100000, timeout_minutes=4, page_number=1, max_address=100):
+    def __init__(self, api_key, page_size=100000, timeout_minutes=4, page_number=1, max_address=100, ttl=60,
+                 cached=True, retry_interval=1):
         self.api_key = api_key
 
         # Initialize `ShroomDK`
@@ -24,14 +25,47 @@ class FlipsideApi(object):
         self.TIMEOUT_MINUTES = timeout_minutes
         # return results of page 1
         self.PAGE_NUMBER = page_number
-        # max address to query
+        # max address to query.
+        # It is not recommended to go above 10000 it already takes a long time and it depends on the network
+        # You will probably have to run more queries because either the query times out or the max rows is reached
+        # At 100 tx per address the 1 million rows is reached if you use max_address=10000
+        # At 1000 tx per address the 1 million rows is reached if you use max_address=1000
+        # on ethereum 1000 or 2000 should be fine but on polygon it is better to use 500
         self.MAX_ADDRESS = max_address
+        # TTL for the query id in minutes
+        self.TTL_MINUTES = ttl
+        # Cached query id
+        self.CACHED = cached
+        # Retry interval in seconds
+        self.RETRY_INTERVAL_SECONDS = retry_interval
+        # The max output size of flipside
+        self.MAX_ROWS = 1000000  # 1 million is the max output size of flipside
 
     def execute_query(self, sql):
+        df_size = self.PAGE_SIZE
+        page_number = 1
+        list_df = []
+        while df_size == self.PAGE_SIZE:
+            df = self.execute_query_page(sql, page_number)
+            page_number += 1
+            list_df.append(df)
+            df_size = df.shape[0]
+
+        df = pd.concat(list_df)
+        if df.shape[0] == self.MAX_ROWS:
+            print("WARNING: the query is probably not returning all the results, you should decrease the max_address")
+        return df
+
+    def execute_query_page(self, sql, page_number):
         try:
             query_result_set = self.sdk.query(sql,
                                               page_size=self.PAGE_SIZE,
-                                              timeout_minutes=self.TIMEOUT_MINUTES)
+                                              page_number=page_number,
+                                              timeout_minutes=self.TIMEOUT_MINUTES,
+                                              ttl_minutes=self.TTL_MINUTES,
+                                              cached=self.CACHED,
+                                              retry_interval_seconds=self.RETRY_INTERVAL_SECONDS)
+
         except Exception as e:
             print(e)
             print(sql)
@@ -57,7 +91,7 @@ class FlipsideApi(object):
                 f"Extracting transactions for address: {start_index} - {end_index}")
             df = self.get_transactions(
                 array_address[start_index: end_index], network)
-            if df.shape[0] == 0:  # retry with smaller query
+            if df.shape[0] == 0 or df.shape == self.MAX_ROWS:  # retry with smaller query timeout or max rows
                 self.extract_transactions_rec(
                     array_address, start_index, end_index, network, extract_dir)
             else:

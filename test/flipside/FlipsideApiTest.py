@@ -14,7 +14,7 @@ if absolute_path not in sys.path:
 
 class FlipsideApiTest(unittest.TestCase):
     api_key = os.environ['FLIPSIDE_API_KEY']
-    flipside_api = FlipsideApi(api_key, max_address=8000)
+    flipside_api = FlipsideApi(api_key, max_address=100)
     PATH_TO_RESOURCES = "../resources"
     PATH_TO_TEST_ADDRESS = os.path.join(PATH_TO_RESOURCES, "test_address")
     PATH_TO_TMP_TX = os.path.join(PATH_TO_RESOURCES, "tmp/transactions")
@@ -30,7 +30,7 @@ class FlipsideApiTest(unittest.TestCase):
     test_address = df_test_address.address.values
 
     df_test_address_large = pd.read_csv(os.path.join(PATH_TO_TEST_ADDRESS, TEST_CSV_ADD_LARGE))
-    test_address_large = df_test_address_large.address.values[:9000]
+    test_address_large = df_test_address_large.address.values[:900]
 
     def test_get_string_address(self):
         string_add = self.flipside_api.get_string_address(
@@ -112,12 +112,14 @@ class FlipsideApiTest(unittest.TestCase):
             os.path.join(self.PATH_TO_TMP_TX, tx_chain),
             "0x000aa644Afae99d06C9a0ED0E41B1e61bECA958d_tx.csv"))
         df_filter = df_output[df_output["block_timestamp"] <= '2023-01-01']
-        self.assertEqual(133, df_filter.shape[1])
+        self.assertEqual(133, df_filter.shape[0])
 
     def test_extract_large_tx_eth(self):
         tx_chain = "ethereum"
-        df_output = self.flipside_api.get_transactions(self.test_address_large, tx_chain)
-        self.assertEqual(100000, df_output.shape[1])  # 100k transactions the maximum per_page of flipside api
+        flipside_api_large = FlipsideApi(self.api_key, max_address=1000)
+        df_output = flipside_api_large.get_transactions(self.test_address_large, tx_chain)
+        df_filter = df_output[df_output["block_timestamp"] <= '2023-01-01']
+        self.assertEqual(107031, df_filter.shape[0])  # 100k transactions the maximum per_page of flipside api
 
     def test_get_transactions_ethereum(self):
         df_output = self.flipside_api.get_transactions(self.list_unique_address, "ethereum")
