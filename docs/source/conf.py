@@ -14,6 +14,8 @@ import sys
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath("."))
 sys.path.insert(0, os.path.abspath("../"))
+sys.path.insert(1, os.path.dirname(os.path.abspath("../../")) + os.sep + "sbscorer")
+sys.path.insert(1, os.path.dirname(os.path.abspath("../")) + os.sep + "sbscorer")
 sys.path.insert(1, os.path.dirname(os.path.abspath("../../")) + os.sep + "sbscorer" + os.sep + "flipside")
 sys.path.insert(1, os.path.dirname(os.path.abspath("../../")) + os.sep + "sbscorer" + os.sep + "utils")
 sys.path.insert(1, os.path.dirname(os.path.abspath("../../")) + os.sep + "sbscorer" + os.sep + "legos")
