@@ -146,8 +146,8 @@ class FlipsideApi(object):
             csv_file = os.path.join(path_to_export, f"{address}_tx.csv")
             if df_address_transactions.shape[0] > 0:
                 save_csv(df_address_transactions, path_to_export, csv_file)
-            else:
-                print(f"No transactions found for address {address}")
+            # else:
+            #     print(f"No transactions found for address {address}")
 
     def extract_transactions_rec(self, array_address, start_index, end_index, network, extract_dir):
         end_first_slice = (start_index + end_index) // 2
