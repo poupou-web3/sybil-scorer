@@ -2,6 +2,8 @@ import os
 import sys
 from pathlib import Path
 
+import numpy as np
+
 absolute_path = os.fspath(Path.cwd().parent.parent.parent)
 if absolute_path not in sys.path:
     sys.path.append(absolute_path)
@@ -99,9 +101,10 @@ class TransactionAnalyser(object):
         The algorithm is the following:
         1. Transform all transactions in to a String of the form: "from_address,
         to_address, from_address, to_address, ..."
-        2. Run the algorithm common longest substring on all the transactions
-        3. If the longest common substring is longer than 5, return true for the current address.
-        4. Keep iterating to find the longest common substring and then the score is
+        2. Replace the address of the wallet by "x" to ba able to compare the behavior of two addresses.
+        3. Run the algorithm common longest substring on all the transactions
+        4. If the longest common substring is longer than 5, return true for the current address.
+        5. Keep iterating to find the longest common substring and then the score is
         the length of the longest common substring divided by half the length of the target address string.
         The score is the min(score, 1) to avoid having a score > 1.
 
@@ -133,15 +136,17 @@ class TransactionAnalyser(object):
 
         # Get all the transactions from other contributors into an 1D array
         df_other_address = self.df_address[self.df_address['address'] != address]
-        for add in df_other_address['address']:
+        df_other_address['lcs'] = 0
+        df_other_address.set_index('address', inplace=True)
+        for add in df_other_address.index:
             df_other_address_transactions = self.get_address_transactions(add)
             if df_other_address_transactions.shape[0] <= 1:
-                df_other_address['lcs'] = 0
+                df_other_address.loc[add, 'lcs'] = 0
             else:
                 array_transactions_other = self.get_array_transactions(df_other_address_transactions, add, algo_type)
-                df_other_address['lcs'] = self.longest_common_sub_string(array_transactions_target,
-                                                                         array_transactions_other,
-                                                                         char_tolerance)
+                lcs = self.longest_common_sub_string(array_transactions_target, array_transactions_other,
+                                                     char_tolerance)
+                df_other_address.loc[add, 'lcs'] = lcs
 
         df_similar_address = df_other_address[df_other_address['lcs'] > 5]
         df_similar_address['score'] = df_similar_address['lcs'] / (len(array_transactions_target) / 2)
@@ -226,21 +231,23 @@ class TransactionAnalyser(object):
     def longest_common_sub_string(target_array, comp_array, char_tolerance=0):
 
         if char_tolerance == 0:
-            m = len(target_array)
-            n = len(comp_array)
+            m = len(comp_array)
+            n = len(target_array)
+            # dp will store solutions as the iteration goes on
+            dp = np.zeros((2, m + 1), dtype=int)
 
-            dp = [[0 for i in range(m + 1)] for j in range(2)]
-            cntr = 0
+            res = 0
 
             for i in range(1, n + 1):
                 for j in range(1, m + 1):
                     if target_array[i - 1] == comp_array[j - 1]:
                         dp[i % 2][j] = dp[(i - 1) % 2][j - 1] + 1
-                        if dp[i % 2][j] > cntr:
-                            cntr = dp[i % 2][j]
+                        if dp[i % 2][j] > res:
+                            res = dp[i % 2][j]
                     else:
                         dp[i % 2][j] = 0
-            return cntr
+            return res
+
         else:
             substring = []
             longest = 0
@@ -257,3 +264,39 @@ class TransactionAnalyser(object):
                         substring = []
                         substring.append(input[i:j + 1])
             return len(substring)
+
+        @staticmethod
+        def longest_common_sub_sequence(target_array, comp_array, char_tolerance=0):
+
+            if char_tolerance == 0:
+                m = len(target_array)
+                n = len(comp_array)
+                # dp will store solutions as the iteration goes on
+                dp = np.zeros((m + 1, n + 1), dtype=int)
+
+                for i in range(m + 1):
+                    for j in range(n + 1):
+                        if i == 0 or j == 0:
+                            dp[i][j] = 0
+                        elif target_array[i - 1] == comp_array[j - 1]:
+                            dp[i][j] = dp[i - 1][j - 1] + 1
+                        else:
+                            dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])
+                return dp[m][n]
+
+            else:
+                substring = []
+                longest = 0
+                for i in range(len(input)):
+                    c_set = set()
+                    for j in range(i, len(input)):
+                        c_set.add(input[j])
+                        if len(c_set) > 2:
+                            break
+                        if j + 1 - i == longest:
+                            substring.append(input[i:j + 1])
+                        if j + 1 - i > longest:
+                            longest = j + 1 - i
+                            substring = []
+                            substring.append(input[i:j + 1])
+                return len(substring)

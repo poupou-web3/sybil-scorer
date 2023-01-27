@@ -55,7 +55,7 @@ class TransactionAnalyserTest(unittest.TestCase):
     def test_transaction_similitude(self):
         address = "0x000aa644afae99d06c9a0ed0e41b1e61beca958d"
         tx_sim = self.tx_analyser.transaction_similitude(address=address, algo_type="address_only", char_tolerance=0)
-        self.assertTrue(True, tx_sim.get(0))
+        self.assertEqual(0, tx_sim.shape[0])
 
 
 if __name__ == '__main__':
