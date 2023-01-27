@@ -18,8 +18,12 @@ class TransactionAnalyserTest(unittest.TestCase):
     tx_analyser = TransactionAnalyser(df_tx, df_address)
 
     def test_has_same_seed(self):
-        address = "0x00000bec592ec7c143c73dc85804962075827ecc"
+        address = "0x000bec82c41837d974899b26b26f9cc8890af9ea"
         self.assertFalse(self.tx_analyser.has_same_seed(address))
+
+    def test_has_same_seed_True(self):
+        address = "0x000aa644afae99d06c9a0ed0e41b1e61beca958d"
+        self.assertTrue(self.tx_analyser.has_same_seed(address))
 
 
 if __name__ == '__main__':

@@ -15,6 +15,7 @@ class TransactionAnalyser(object):
         self.df_transactions = df_transactions
         # holds a df of address/seed wallet so we don't have to create it each time
         self.df_seed_wallet = None
+        self.gb_EOA_sorted = None
         self.df_address = df_address
         # We use a df address so we can load all transactions in memmory and then change the address list easily
         # for example to calculate on a specific project
@@ -39,13 +40,21 @@ class TransactionAnalyser(object):
 
         if self.df_seed_wallet is None:
             self.set_seed_wallet()
-        df_same_seed = self.get_address_transactions(self.df_seed_wallet, address)
+        df_same_seed = self.get_address_same_seed(address)
         return df_same_seed.shape[0] > 0
 
+    def get_address_same_seed(self, address):
+        seed_add = self.df_seed_wallet.loc[address, 'from_address']
+        df_same_seed = self.df_seed_wallet.drop(address, axis=0).loc[
+            self.df_seed_wallet.drop(address, axis=0)['from_address'] == seed_add]
+        return df_same_seed
+
     def set_seed_wallet(self):
-        self.df_seed_wallet = \
-            self.df_transactions.sort_values('block_timestamp', ascending=True).groupby('EOA').first().loc[
-                'from_address', 'to_address']
+        self.set_group_by_sorted_EOA()
+        self.df_seed_wallet = self.gb_EOA_sorted.first().loc[:, ['from_address', 'to_address']]
+
+    def set_group_by_sorted_EOA(self):
+        self.gb_EOA_sorted = self.df_transactions.sort_values('block_timestamp', ascending=True).groupby('EOA')
 
     def transaction_similitude(self, address, algo_type="address_only", char_tolerance=0):
         """
@@ -117,9 +126,9 @@ class TransactionAnalyser(object):
         return df_similar_address.shape[0] > 0
 
     def get_address_transactions(self, address):
-        return self.get_address_transactions(self.df_transactions, address)
+        return self.get_address_transactions_add(self.df_transactions, address)
 
-    def get_address_transactions(self, df, address):
+    def get_address_transactions_add(self, df, address):
         return df[np.logical_or(self.df_transactions['from_address'] == address,
                                 self.df_transactions['to_address'] == address)]
 
