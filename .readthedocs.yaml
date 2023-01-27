@@ -17,10 +17,6 @@ formats:
 python:
   install:
     - requirements: docs/requirements-doc.txt
-    - method: pip
-      path: .
-      extra_requirements:
-        - docs
-    - method: pip
-      path: sbscorer/flipside
-  system_packages: true
+
+submodules:
+  include: all
