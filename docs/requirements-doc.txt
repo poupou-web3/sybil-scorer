@@ -1,5 +1,3 @@
 sphinx==6.1.3
 furo==2022.12.7
-sbscorer/flipside
-sbscorer/utils
-sbscorer/legos
+sbscorer
