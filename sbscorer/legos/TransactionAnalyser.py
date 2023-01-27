@@ -76,6 +76,9 @@ class TransactionAnalyser(object):
             df.drop(address, axis=0)['from_address'] == seed_add]
         return df_same_seed
 
+    def has_suspicious_seed_behavior(self, address):
+        return self.has_same_seed(address) != self.has_same_seed_naive(address)
+
     def set_seed_wallet_naive(self):
         if self.gb_EOA_sorted is None:
             self.set_group_by_sorted_EOA()
