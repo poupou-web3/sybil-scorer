@@ -2,8 +2,6 @@ import os
 import sys
 from pathlib import Path
 
-import numpy as np
-
 absolute_path = os.fspath(Path.cwd().parent.parent.parent)
 if absolute_path not in sys.path:
     sys.path.append(absolute_path)
@@ -14,13 +12,14 @@ class TransactionAnalyser(object):
     def __init__(self, df_transactions, df_address):
         self.df_transactions = df_transactions
         # holds a df of address/seed wallet so we don't have to create it each time
+        self.df_seed_wallet_naive = None
         self.df_seed_wallet = None
         self.gb_EOA_sorted = None
         self.df_address = df_address
         # We use a df address so we can load all transactions in memmory and then change the address list easily
         # for example to calculate on a specific project
 
-    def has_same_seed(self, address):
+    def has_same_seed_naive(self, address):
         """Return if the address has the same seed wallet as one of the seed wallet of the df_transactions
 
             If the df_seed_wallet is not set, it will set it
@@ -38,20 +37,54 @@ class TransactionAnalyser(object):
             True if the address has the same seed wallet as one of the seed wallet of the df_transactions
         """
 
-        if self.df_seed_wallet is None:
-            self.set_seed_wallet()
-        df_same_seed = self.get_address_same_seed(address)
+        if self.df_seed_wallet_naive is None:
+            self.set_seed_wallet_naive()
+        df_same_seed = self.get_address_same_seed(self.df_seed_wallet_naive, address)
         return df_same_seed.shape[0] > 0
 
-    def get_address_same_seed(self, address):
-        seed_add = self.df_seed_wallet.loc[address, 'from_address']
-        df_same_seed = self.df_seed_wallet.drop(address, axis=0).loc[
-            self.df_seed_wallet.drop(address, axis=0)['from_address'] == seed_add]
+    def has_same_seed(self, address):
+        """Return if the address has the same seed wallet as one of the seed wallet of the df_transactions
+        using a non-naive algorithm.
+        For some address the first transaction is not the incomming funding transaction.
+        It is possible to interact with a smart contract even before receiving any fund.
+        This algorithm takes that into account.
+
+            If the df_seed_wallet is not set, it will set it
+            Note df_transaction could contain transactions from multiple network but the seed wallet of the address is
+             filtered which prevent unexpected raise of the boolean.
+
+            Parameters
+            ----------
+            address : str
+                The address to check
+
+            Returns
+            -------
+            has_same_seed : bool
+            True if the address has the same seed wallet as one of the seed wallet of the df_transactions
+        """
+
+        if self.df_seed_wallet_naive is None:
+            self.set_seed_wallet()
+        df_same_seed = self.get_address_same_seed(self.df_seed_wallet, address)
+        return df_same_seed.shape[0] > 0
+
+    @staticmethod
+    def get_address_same_seed(df, address):
+        seed_add = df.loc[address, 'from_address']
+        df_same_seed = df.drop(address, axis=0).loc[
+            df.drop(address, axis=0)['from_address'] == seed_add]
         return df_same_seed
 
+    def set_seed_wallet_naive(self):
+        if self.gb_EOA_sorted is None:
+            self.set_group_by_sorted_EOA()
+        self.df_seed_wallet_naive = self.gb_EOA_sorted.first().loc[:, ['from_address', 'to_address']]
+
     def set_seed_wallet(self):
-        self.set_group_by_sorted_EOA()
-        self.df_seed_wallet = self.gb_EOA_sorted.first().loc[:, ['from_address', 'to_address']]
+        df_filtered = self.df_transactions[self.df_transactions['EOA'] == self.df_transactions['to_address']]
+        df_gb = df_filtered.sort_values('block_timestamp', ascending=True).groupby('EOA')
+        self.df_seed_wallet = df_gb.first().loc[:, ['from_address', 'to_address']]
 
     def set_group_by_sorted_EOA(self):
         self.gb_EOA_sorted = self.df_transactions.sort_values('block_timestamp', ascending=True).groupby('EOA')
@@ -99,10 +132,13 @@ class TransactionAnalyser(object):
         df_other_address = self.df_address[self.df_address['address'] != address]
         for add in df_other_address['address']:
             df_other_address_transactions = self.get_address_transactions(add)
-            array_transactions_other = self.get_array_transactions(df_other_address_transactions, add, algo_type)
-            df_other_address['lcs'] = self.longest_common_sub_string(array_transactions_target,
-                                                                     array_transactions_other,
-                                                                     char_tolerance)
+            if df_other_address_transactions.shape[0] <= 1:
+                df_other_address['lcs'] = 0
+            else:
+                array_transactions_other = self.get_array_transactions(df_other_address_transactions, add, algo_type)
+                df_other_address['lcs'] = self.longest_common_sub_string(array_transactions_target,
+                                                                         array_transactions_other,
+                                                                         char_tolerance)
 
         df_similar_address = df_other_address[df_other_address['lcs'] > 5]
         df_similar_address['score'] = df_similar_address['lcs'] / (len(array_transactions_target) / 2)
@@ -111,6 +147,29 @@ class TransactionAnalyser(object):
 
     @staticmethod
     def get_array_transactions(df_address_transactions, address, algo_type="address_only"):
+        """
+        This method replace the target address by an arbitrary "x" to be able to compare the similitude of two wallet.
+
+        Parameters
+        ----------
+        df_address_transactions : pd.DataFrame
+            The data frame of transactions
+
+        address :  str
+            The address to replace by x
+
+        algo_type : str
+            The type of algorithm to use,
+                "address_only" only return from_address and to_address with the address replaced by x
+                "address_and_value" return from_address, value, to_address with the address replaced by x
+
+        Returns
+        -------
+        array_transactions : narray
+            An array of strings
+
+        """
+        df_address_transactions.sort_values('block_timestamp', ascending=True, inplace=True)
         if algo_type == "address_only":
             array_transactions = df_address_transactions.loc[:, ['from_address', 'to_address']] \
                 .replace(address, 'x').values.flatten()
@@ -126,11 +185,39 @@ class TransactionAnalyser(object):
         return df_similar_address.shape[0] > 0
 
     def get_address_transactions(self, address):
+        """
+        Get transactions of an address from the self.df_transaction df
+        Parameters
+        ----------
+        address : str
+            The address to retrieve transactions
+
+        Returns
+        -------
+        df : pd.DataFrame
+            The data frame with the transactions of the address
+
+        """
         return self.get_address_transactions_add(self.df_transactions, address)
 
     def get_address_transactions_add(self, df, address):
-        return df[np.logical_or(self.df_transactions['from_address'] == address,
-                                self.df_transactions['to_address'] == address)]
+        """
+        Get transactions of an address from a dataframe df
+        Parameters
+        ----------
+        df : pd.dataFrame
+            Data frame of transactions with the 'EOA' column
+
+        address : str
+            The address to retrieve transactions
+
+        Returns
+        -------
+        df : pd.DataFrame
+            The data frame with the transactions of the address
+
+        """
+        return df[self.df_transactions['EOA'] == address]
 
     @staticmethod
     def longest_common_sub_string(target_array, comp_array, char_tolerance=0):
