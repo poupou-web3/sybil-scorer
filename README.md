@@ -1,8 +1,35 @@
-# cluster-scorer
+# sybil-scorer
+
+## What is it?
+Sybil scorer is a python package that provides useful classes and method to analyse the behaviour of addresses. 
+
 
 ## Installation
-download data in https://huggingface.co/datasets/Poupou/Gitcoin-Grant-DataBuilder/tree/main
 
+Pip install sybil-scorer
+
+## What should I use?
+
+The package has two main sub-packages. 
+- flipside a package to easily retrieve large amount of data from he flipside API. 
+- legos a package to perform on chain transactions analysis. Currently the methods are made to easily detect Sybil behaviour. 
+
+## Additional Data 
+
+Some data for an easier use of the package in the context of Gitcoin grants are made available at :
+https://huggingface.co/datasets/Poupou/Gitcoin-Grant-DataBuilder/tree/main
+
+### Ethereum Transaction Data
+Ethereum Transaction data are available for download on Ocean here:
+
+These are all the transactions performed by users who contributed to the grant as of 20th of January 2022.
+It is organised with one csv file for each address to facilitate the loading of only the necessary data transactions when performing analysis on a specific grant or project. 
+The data was produced using the flipside package. 
+
+### Grant Data and Addresses 
+The data provided by Gitcoin was standardised in the same format for all grants to make it easier to manipulate and find the desired wallet addresses of contributors to a specific project for example. 
+
+These can be recreated by using the files provided by ODC/Gitcoin and running the Jupyter notebook in the Jupyter folder. 
 extract zip to have 
 "data/grants" folder at the root of the folder
 
