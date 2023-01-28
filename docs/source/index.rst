@@ -7,13 +7,14 @@ You can install the package with
 Pip install sybil-scorer
 ========================================
 
-.. toctree::
-   :maxdepth: 3
-   :caption: Contents:
+Some words
 
-   flipside
-   legos
-   utils
+.. autosummary::
+   :toctree: _autosummary
+   :recursive:
+
+   sbscorer
+
 
 Indices and tables
 ==================
