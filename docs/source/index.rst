@@ -1,13 +1,14 @@
-.. Sybil Scorer documentation master file, created by
-sphinx-quickstart on Fri Jan 27 16:34:08 2023.
-You can adapt this file completely to your liking, but it should at least
-contain the root `toctree` directive.
+
 
 Welcome to Sybil Scorer's documentation!
+
+Sybil-scorer is a python package built to help fight Sybil's on blockchain. 
+You can install the package with 
+Pip install sybil-scorer
 ========================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Contents:
 
    flipside
