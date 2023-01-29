@@ -135,7 +135,7 @@ class TransactionAnalyser(object):
         array_transactions_target = self.get_array_transactions(df_address_transactions, address, algo_type)
 
         # Get all the transactions from other contributors into an 1D array
-        df_other_address = self.df_address[self.df_address['address'] != address]
+        df_other_address = self.df_address.loc[self.df_address['address'] != address, :]
         df_other_address['lcs'] = 0
         df_other_address.set_index('address', inplace=True)
         for add in df_other_address.index:
@@ -148,9 +148,9 @@ class TransactionAnalyser(object):
                                                      char_tolerance)
                 df_other_address.loc[add, 'lcs'] = lcs
 
-        df_similar_address = df_other_address[df_other_address['lcs'] > 5]
-        df_similar_address['score'] = df_similar_address['lcs'] / (len(array_transactions_target) / 2)
-        df_similar_address['score'] = df_similar_address['score'].apply(lambda x: min(x, 1))
+        df_similar_address = df_other_address.loc[df_other_address['lcs'] > 5, :]
+        df_similar_address['score'] = df_similar_address.loc[:, 'lcs'].apply(
+            lambda x: min(x / (len(array_transactions_target) / 2), 1))
         return df_similar_address
 
     @staticmethod
