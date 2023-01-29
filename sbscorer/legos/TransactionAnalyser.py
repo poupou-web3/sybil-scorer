@@ -66,10 +66,13 @@ class TransactionAnalyser(object):
             True if the address has the same seed wallet as one of the seed wallet of the df_transactions
         """
 
-        if self.df_seed_wallet_naive is None:
+        if self.df_seed_wallet is None:
             self.set_seed_wallet()
-        df_same_seed = self.get_address_same_seed(self.df_seed_wallet, address)
-        return df_same_seed.shape[0] > 0
+        if address in self.df_seed_wallet.to_address.values:
+            df_same_seed = self.get_address_same_seed(self.df_seed_wallet, address)
+            return df_same_seed.shape[0] > 0
+        else:
+            return False
 
     @staticmethod
     def get_address_same_seed(df, address):
