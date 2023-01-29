@@ -30,7 +30,8 @@ class LoadData(object):
     def create_df_tx(self, tx_chain, address_list=None, n_files=-1):
         """
         Create a dataframe with all transactions from a given chain.
-        You can provide a list of addresses to filter the contributors. For example if you want to study the sybil of a given grant or project
+        You can provide a list of addresses to filter the contributors. For example if you want to study the sybil of a
+        given grant or project
 
         Parameters
         ----------
