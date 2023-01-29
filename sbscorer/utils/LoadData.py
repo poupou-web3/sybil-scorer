@@ -28,6 +28,25 @@ class LoadData(object):
         return files
 
     def create_df_tx(self, tx_chain, address_list=None, n_files=-1):
+        """
+        Create a dataframe with all transactions from a given chain.
+        You can provide a list of addresses to filter the contributors. For example if you want to study the sybil of a given grant or project
+
+        Parameters
+        ----------
+        tx_chain : str
+            The chain to study. For example "ethereum"
+        address_list : list
+            A list of addresses to filter the contributors
+        n_files : int
+            The number of files to load. If -1, all files are loaded
+
+        Returns
+        -------
+        df : pd.DataFrame
+            A dataframe with all transactions from the given chain
+
+        """
 
         if address_list is None:
             files = self.get_files(self.path_to_tx_dir, tx_chain)
