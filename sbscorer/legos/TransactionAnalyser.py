@@ -12,6 +12,19 @@ if absolute_path not in sys.path:
 class TransactionAnalyser(object):
 
     def __init__(self, df_transactions, df_address):
+        """
+        This class is used to analyse transactions of an address.
+        It has methods that allows to perform on chain analysis of an address.
+
+        It is initialized with a df_transactions containing all the transactions made by a list of addresses that
+        should match the df_transactions
+        Parameters
+        ----------
+        df_transactions : pd.DataFrame
+            The dataframe containing all the transactions of the addresses
+        df_address : pd.DataFrame
+            The dataframe containing a 'address' column 
+        """
         self.df_transactions = df_transactions
         # holds a df of address/seed wallet so we don't have to create it each time
         self.df_seed_wallet_naive = None
@@ -80,25 +93,70 @@ class TransactionAnalyser(object):
 
     @staticmethod
     def get_address_same_seed(df, address):
+        """
+        Return a df of address that have the same seed wallet as the address given in parameter.
+        Parameters
+        ----------
+        df : pd.DataFrame
+            The df to filter
+        address : str
+            The address to check
+        Returns
+        -------
+        df_same_seed : pd.DataFrame
+            The df of address that have the same seed wallet as the address given in parameter.
+
+        """
         seed_add = df.loc[address, 'from_address']
         df_same_seed = df.drop(address, axis=0).loc[
             df.drop(address, axis=0)['from_address'] == seed_add]
         return df_same_seed
 
     def has_suspicious_seed_behavior(self, address):
+        """
+        Return a boolean whether the address has suspicious seed behavior.
+        Most addresses have a seed wallet that is given by first transaction given by the naive algorithm.
+        However, some addresses first transaction is no the first incoming transaction because they first interacted
+        with a smart contract. This is a suspicious behavior.
+        Parameters
+        ----------
+        address
+
+        Returns
+        -------
+
+        """
         return self.has_same_seed(address) != self.has_same_seed_naive(address)
 
     def set_seed_wallet_naive(self):
+        """
+        Set the df_seed_wallet_naive attribute of the class. It holds the seed wallet of the addresses in 'EOA' using
+        a naive method that takes the from_address from the transaction of the address Returns -------
+
+        """
         if self.gb_EOA_sorted is None:
             self.set_group_by_sorted_EOA()
         self.df_seed_wallet_naive = self.gb_EOA_sorted.first().loc[:, ['from_address', 'to_address']]
 
     def set_seed_wallet(self):
+        """
+        Set the df_seed_wallet attribute of the class. It holds the seed wallet of the addresses in 'EOA'
+        of df_transactions. It is a non naive method that look for the first incoming transaction of the address to get
+         the seed wallet.
+        Returns
+        -------
+
+        """
         df_filtered = self.df_transactions[self.df_transactions['EOA'] == self.df_transactions['to_address']]
         df_gb = df_filtered.sort_values('block_timestamp', ascending=True).groupby('EOA')
         self.df_seed_wallet = df_gb.first().loc[:, ['from_address', 'to_address']]
 
     def set_group_by_sorted_EOA(self):
+        """
+        Set the gb_EOA_sorted attribute of the class it holds the df_transactions sorted by block_timestamp and
+        grouped by EOA Returns -------
+
+        """
         self.gb_EOA_sorted = self.df_transactions.sort_values('block_timestamp', ascending=True).groupby('EOA')
 
     def transaction_similitude(self, address, algo_type="address_only", char_tolerance=0):
@@ -268,8 +326,50 @@ class TransactionAnalyser(object):
             raise ValueError("algo_type must be either address_only or address_and_value")
         return array_transactions
 
-    def has_transaction_similitude(self, address):
-        df_similar_address = self.transaction_similitude(address)
+    def has_transaction_similitude(self, address, algo_type="address_only", char_tolerance=0):
+        """
+        Return a boolean whether the address has similar behavior as another address.
+        The algorithm check against all addresses in df_transactions using transaction_similitude
+
+        Parameters
+        ----------
+        algo_type : str
+            The type of algorithm to use. Default is "address_only".
+        char_tolerance : int
+            The number of character to skip when using the longest common substring algorithm. Default is 0.
+        address : str
+            The address to check
+
+        Returns
+        -------
+        has_similar_behavior : bool
+
+        """
+        df_similar_address = self.transaction_similitude(address, algo_type=algo_type, char_tolerance=char_tolerance)
+        return df_similar_address.shape[0] > 0
+
+    def has_transaction_similitude_opti(self, address, algo_type="address_only", char_tolerance=0):
+        """
+        Return a boolean whether the address has similar behavior as another address.
+        The algorithm check against all addresses in df_transactions using transaction_similitude
+
+        Parameters
+        ----------
+        algo_type : str
+            The type of algorithm to use. Default is "address_only".
+        char_tolerance : int
+            The number of character to skip when using the longest common substring algorithm. Default is 0.
+        address : str
+            The address to check
+
+        Returns
+        -------
+        has_similar_behavior : bool
+
+        """
+        df_similar_address = self.transaction_similitude_opti(address,
+                                                              algo_type=algo_type,
+                                                              char_tolerance=char_tolerance)
         return df_similar_address.shape[0] > 0
 
     def get_address_transactions(self, address):
@@ -309,6 +409,21 @@ class TransactionAnalyser(object):
 
     @staticmethod
     def longest_common_sub_string(target_array, comp_array, char_tolerance=0):
+        """
+        This method return the length of the longest common substring between two arrays of strings.
+        Parameters
+        ----------
+        target_array : narray
+            The array of strings to compare
+        comp_array : narray
+            The array of strings to compare
+        char_tolerance : int
+            The number of character to skip when comparing two strings not available yet
+        Returns
+        -------
+        lcs : int
+            The length of the longest common substring
+        """
 
         if char_tolerance == 0:
             m = len(comp_array)
@@ -346,6 +461,18 @@ class TransactionAnalyser(object):
             return len(substring)
 
     def set_dict_add_string_transactions(self, algo_type="address_only"):
+        """
+        This method create a dictionary with the address as key and the array of transactions as value.
+        The array of transactions is the array crated with the get_array_transactions method.
+        Parameters
+        ----------
+        algo_type : str
+            The type of algorithm to use
+
+        Returns
+        -------
+        None it sets the self.dict_add_string_tx or self.dict_add_value_string_tx attribute
+        """
         dict_string_tx = {}
         if self.gb_EOA_sorted is None:
             gb_address = self.df_transactions.groupby('EOA')
