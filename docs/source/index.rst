@@ -1,8 +1,11 @@
 Welcome to Sybil Scorer's documentation!
 
 Sybil-scorer is a python package built to help fight Sybil's on blockchain. 
-You can install the package with 
-Pip install sybil-scorer
+You can install the package with
+
+```Pip install sybil-scorer```
+
+
 ========================================
 
 .. toctree::
