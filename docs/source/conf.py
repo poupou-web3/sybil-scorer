@@ -17,7 +17,8 @@ release = '0.0.0'
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath('../..'))  # Source code dir relative to this file
+# sys.path.insert(0, os.path.abspath('../..'))  # Source code dir relative to this file
+sys.path.insert(0, os.path.abspath('../../sbscorer/'))
 
 extensions = [
     'sphinx.ext.autodoc',  # Core library for html generation from docstrings
