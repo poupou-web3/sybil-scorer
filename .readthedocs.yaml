@@ -13,3 +13,11 @@ formats:
 python:
   install:
     - requirements: docs/requirements-doc.txt
+    - method: pip
+      path: .
+  system_packages: true
+sphinx:
+  configuration: docs/source/conf.py
+
+submodules:
+  include: all
