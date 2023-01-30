@@ -12,9 +12,34 @@ def save_csv(df, path_to_export, csv_file):
 
 
 class FlipsideApi(object):
+    """
+    This class is used to query the flipside crypto api
+    It has methods to easily retrieve the data and save it to csv
+    """
 
     def __init__(self, api_key, page_size=100000, timeout_minutes=4, page_number=1, max_address=100, ttl=60,
                  cached=True, retry_interval=1):
+        """
+        Init method of FlipsideApi
+        Parameters
+        ----------
+        api_key : str
+            The api key to use to query flipside https://sdk.flipsidecrypto.xyz/shroomdk/apikeys
+        page_size : int
+            The number of rows to return per page default is 100000
+        timeout_minutes : int
+            The timeout in minutes default is 4
+        page_number : int
+            The page number to return default is 1
+        max_address : int
+            Max number of addresses to query default is 100
+        ttl : int
+            The time to live in minutes default is 60 minutes, ie the time the query is saved in the cache.
+        cached : bool
+            If the query should be cached default is True. If you query several page it will run faster
+        retry_interval : int
+            The retry interval in seconds default is 1
+        """
         self.api_key = api_key
 
         # Initialize `ShroomDK`
@@ -42,6 +67,19 @@ class FlipsideApi(object):
         self.MAX_ROWS = 1000000  # 1 million is the max output size of flipside
 
     def execute_query(self, sql):
+        """
+        Execute a query and return a pandas dataframe, it will automatically query all the pages.
+        Parameters
+        ----------
+        sql : str
+            The sql query to execute
+
+        Returns
+        -------
+        df : pandas dataframe
+            The dataframe containing the results of the query
+
+        """
         df_size = self.PAGE_SIZE
         page_number = 1
         list_df = []
@@ -57,6 +95,26 @@ class FlipsideApi(object):
         return df
 
     def execute_query_page(self, sql, page_number):
+        """
+        Execute a query and return a pandas dataframe.
+        Parameters
+        ----------
+        sql : str
+            The sql query to execute
+        page_number : int
+            The page number to return
+
+        Returns
+        -------
+        df : pandas dataframe
+            The dataframe containing the results of the query
+
+        Exceptions
+        ----------
+        Exception : Exception
+            When the query times out. It will return an empty dataframe and then if you use the other methods will try
+            to rerun with a smaller number of addresses.
+        """
         try:
             query_result_set = self.sdk.query(sql,
                                               page_size=self.PAGE_SIZE,
@@ -73,12 +131,47 @@ class FlipsideApi(object):
         return pd.DataFrame(query_result_set.records)
 
     def extract_transactions(self, extract_dir, array_address):
+        """
+        Extract the transactions contained in array_address for all the networks and save them to csv in the extract_dir
+
+        Parameters
+        ----------
+        extract_dir : str
+            The directory where to save the csv files
+        array_address : array
+            The array of addresses to extract
+
+        Returns
+        -------
+        None
+            Create csv files in the extract_dir
+
+        """
         list_network = ["ethereum", "polygon",
                         "arbitrum", "avalanche", "gnosis", "optimism"]
         for network in list_network:
             self.extract_transactions_net(extract_dir, array_address, network)
 
     def extract_transactions_net(self, extract_dir, array_address, network):
+        """
+        Extract the transactions contained in array_address for the network and save them to csv in the extract_dir
+        Each csv is named as eoa_tx.csv and is stored in a folder named after the network
+
+        Parameters
+        ----------
+        extract_dir : str
+            The directory where to save the csv files
+        array_address : array
+            The array of addresses to extract
+        network : str
+            The network to extract the transactions from
+
+        Returns
+        -------
+        None
+            Create csv files in the extract_dir
+
+        """
         print("Extracting transactions for network: ", network)
         len_address = len(array_address)
         q, r = divmod(len_address, self.MAX_ADDRESS)
@@ -99,6 +192,22 @@ class FlipsideApi(object):
                     df, array_address[start_index: end_index], extract_dir, network)
 
     def get_transactions(self, array_address, network):
+        """
+        Get the transactions for the array of addresses and the network in a df
+
+        Parameters
+        ----------
+        array_address : array
+            The array of addresses to extract
+        network :str
+            The network to extract the transactions from
+
+        Returns
+        -------
+        df : pandas dataframe
+            The dataframe containing the transactions
+
+        """
         if network == "ethereum":
             sql = self.get_eth_transactions_sql_query(array_address)
         elif network == "polygon":
@@ -150,6 +259,27 @@ class FlipsideApi(object):
             #     print(f"No transactions found for address {address}")
 
     def extract_transactions_rec(self, array_address, start_index, end_index, network, extract_dir):
+        """
+        Recursive method to extract the transactions for the array of addresses and the network in a df
+        It is used to retry with smaller query if the query timeout or the max rows are reached
+        Parameters
+        ----------
+        array_address : array
+            The array of addresses to extract
+        start_index : int
+            The start index of the array_address
+        end_index : int
+            The end index of the array_address
+        network : str
+            The network to extract the transactions from
+        extract_dir : str
+            The directory where to save the csv files
+
+        Returns
+        -------
+        None
+
+        """
         end_first_slice = (start_index + end_index) // 2
         print("Retrying with smaller query")
         self.extract_transactions_between_rec(
@@ -158,6 +288,27 @@ class FlipsideApi(object):
             array_address, end_first_slice, end_index, network, extract_dir)
 
     def extract_transactions_between_rec(self, array_address, start_index, end_index, network, extract_dir):
+        """
+        Recursive method to extract the transactions for the array of addresses and the network in a df
+        It is used to retry with smaller query if the query timeout or the max rows are reached
+        Parameters
+        ----------
+        array_address : array
+            The array of addresses to extract
+        start_index : int
+            The start index of the array_address
+        end_index : int
+            The end index of the array_address
+        network : str
+            The network to extract the transactions from
+        extract_dir : str
+            The directory where to save the csv files
+
+        Returns
+        -------
+        None
+
+        """
         print(
             f"Extracting transactions for address: {start_index} - {end_index}")
         df = self.get_transactions(array_address[start_index: end_index], network)
@@ -172,6 +323,18 @@ class FlipsideApi(object):
 
     @staticmethod
     def get_string_address(array_address):
+        """
+        Get the string of the array of addresses to use in the sql query
+        Parameters
+        ----------
+        array_address : array
+
+        Returns
+        -------
+        lower_str : str
+            The string to use in the sql query
+
+        """
         lower_str = ""
         for add in array_address:
             lower_str += f'LOWER(\'{add}\'),'
@@ -179,6 +342,21 @@ class FlipsideApi(object):
         return lower_str
 
     def get_eth_transactions_sql_query(self, array_address, limit=0):
+        """
+        Get the sql query to extract the transactions for the array of addresses and ethereum network
+        Parameters
+        ----------
+        array_address : array
+            The array of addresses to extract
+        limit : int
+            The limit of the query default 0 everything is retrieved. The limit is the Keyword LIMIT in SQL.
+
+        Returns
+        -------
+        sql : str
+            The sql query to execute
+
+        """
         str_list_add = self.get_string_address(array_address)
         if limit != 0:
             string_limit = f"LIMIT {limit}"
@@ -201,6 +379,21 @@ class FlipsideApi(object):
         return sql
 
     def get_polygon_transactions_sql_query(self, array_address, limit=0):
+        """
+        Get the sql query to extract the transactions for the array of addresses and polygon network
+        Parameters
+        ----------
+        array_address : array
+            The array of addresses to extract
+        limit : int
+            The limit of the query default 0 everything is retrieved. The limit is the Keyword LIMIT in SQL.
+
+        Returns
+        -------
+        sql : str
+            The sql query to execute
+
+        """
         str_list_add = self.get_string_address(array_address)
         if limit != 0:
             string_limit = f"LIMIT {limit}"
@@ -223,6 +416,21 @@ class FlipsideApi(object):
         return sql
 
     def get_arbitrum_transactions_sql_query(self, array_address, limit=0):
+        """
+        Get the sql query to extract the transactions for the array of addresses and arbitrum network
+        Parameters
+        ----------
+        array_address : array
+            The array of addresses to extract
+        limit : int
+            The limit of the query default 0 everything is retrieved. The limit is the Keyword LIMIT in SQL.
+
+        Returns
+        -------
+        sql : str
+            The sql query to execute
+
+        """
         str_list_add = self.get_string_address(array_address)
         if limit != 0:
             string_limit = f"LIMIT {limit}"
@@ -245,6 +453,20 @@ class FlipsideApi(object):
         return sql
 
     def get_avalanche_transactions_sql_query(self, array_address, limit=0):
+        """
+        Get the sql query to extract the transactions for the array of addresses and avalanche network
+        Parameters
+        ----------
+        array_address : array
+            The array of addresses to extract
+        limit : int
+            The limit of the query default 0 everything is retrieved. The limit is the Keyword LIMIT in SQL.
+
+        Returns
+        -------
+        sql : str
+            The sql query to execute
+        """
         str_list_add = self.get_string_address(array_address)
         if limit != 0:
             string_limit = f"LIMIT {limit}"
@@ -267,6 +489,21 @@ class FlipsideApi(object):
         return sql
 
     def get_gnosis_transactions_sql_query(self, array_address, limit=0):
+        """
+        Get the sql query to extract the transactions for the array of addresses and gnosis network
+        Parameters
+        ----------
+        array_address : array
+            The array of addresses to extract
+        limit : int
+            The limit of the query default 0 everything is retrieved. The limit is the Keyword LIMIT in SQL.
+
+        Returns
+        -------
+        sql : str
+            The sql query to execute
+
+        """
         str_list_add = self.get_string_address(array_address)
         if limit != 0:
             string_limit = f"LIMIT {limit}"
@@ -288,6 +525,21 @@ class FlipsideApi(object):
         return sql
 
     def get_optimism_transactions_sql_query(self, array_address, limit=0):
+        """
+        Get the sql query to extract the transactions for the array of addresses and optimism network
+        Parameters
+        ----------
+        array_address : array
+            The array of addresses to extract
+        limit : int
+            The limit of the query default 0 everything is retrieved. The limit is the Keyword LIMIT in SQL.
+
+        Returns
+        -------
+        sql : str
+            The sql query to execute
+
+        """
         str_list_add = self.get_string_address(array_address)
         if limit != 0:
             string_limit = f"LIMIT {limit}"
@@ -310,6 +562,23 @@ class FlipsideApi(object):
         return sql
 
     def get_cross_chain_info_sql_query(self, array_address, info_type="label", limit=0):
+        """
+        Get the sql query to extract the cross chain labels or tags for the array of addresses
+        Parameters
+        ----------
+        array_address : array
+            The array of addresses to extract
+        info_type : str
+            The type of info to extract. It can be "label" or "tag"
+        limit : int
+            The limit of the query default 0 everything is retrieved. The limit is the Keyword LIMIT in SQL.
+
+        Returns
+        -------
+        sql : str
+            The sql query to execute
+
+        """
         str_list_add = self.get_string_address(array_address)
         if info_type == "label":
             table_name = "crosschain.address_labels"
@@ -332,6 +601,17 @@ class FlipsideApi(object):
 
     @staticmethod
     def get_price_feed_eth_ftm_sql_query(limit=0):
+        """
+        Get the sql query to extract the price feed for ethereum and fantom tokens starting from 2023-12-11
+        Parameters
+        ----------
+        limit : int
+            The limit of the query default 0 everything is retrieved. The limit is the Keyword LIMIT in SQL.
+
+        Returns
+        -------
+
+        """
         if limit != 0:
             string_limit = f"LIMIT {limit}"
         else:
