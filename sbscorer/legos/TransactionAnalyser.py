@@ -10,6 +10,10 @@ if absolute_path not in sys.path:
 
 
 class TransactionAnalyser(object):
+    """
+    This class is used to analyse transactions of an address.
+    It has methods that allows to perform on chain analysis of an address.
+    """
 
     def __init__(self, df_transactions, df_address):
         """
