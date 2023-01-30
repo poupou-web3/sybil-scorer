@@ -39,21 +39,22 @@ class TransactionAnalyser(object):
         self.dict_add_value_string_tx = None
 
     def has_same_seed_naive(self, address):
-        """Return if the address has the same seed wallet as one of the seed wallet of the df_transactions
+        """
+        Return if the address has the same seed wallet as one of the seed wallet of the df_transactions
 
-            If the df_seed_wallet is not set, it will set it
-            Note df_transaction could contain transactions from multiple network but the seed wallet of the address is
-            filtered which prevent unexpected raise of the boolean.
+        If the df_seed_wallet is not set, it will set it
+        Note df_transaction could contain transactions from multiple network but the seed wallet of the address is
+        filtered which prevent unexpected raise of the boolean.
 
-            Parameters
-            ----------
-            address : str
-                The address to check
+        Parameters
+        ----------
+        address : str
+            The address to check
 
-            Returns
-            -------
-            has_same_seed : bool
-                True if the address has the same seed wallet as one of the seed wallet of the df_transactions
+        Returns
+        -------
+        has_same_seed : bool
+            True if the address has the same seed wallet as one of the seed wallet of the df_transactions
         """
 
         if self.df_seed_wallet_naive is None:
@@ -62,24 +63,25 @@ class TransactionAnalyser(object):
         return df_same_seed.shape[0] > 0
 
     def has_same_seed(self, address):
-        """Return if the address has the same seed wallet as one of the seed wallet of the df_transactions
+        """
+        Return if the address has the same seed wallet as one of the seed wallet of the df_transactions
         using a non-naive algorithm.
-        For some address the first transaction is not the incomming funding transaction.
+        For some address the first transaction is not the incoming funding transaction.
         It is possible to interact with a smart contract even before receiving any fund.
         This algorithm takes that into account.
 
-            If the df_seed_wallet is not set, it will set it
-            Note df_transaction could contain transactions from multiple network but the seed wallet of the address is
-             filtered which prevent unexpected raise of the boolean.
+        If the df_seed_wallet is not set, it will set it
+        Note df_transaction could contain transactions from multiple network but the seed wallet of the address is
+        filtered which prevent unexpected raise of the boolean.
 
-            Parameters
-            ----------
-            address : str
-                The address to check
+        Parameters
+        ----------
+        address : str
+            The address to check
 
-            Returns
-            -------
-            has_same_seed : bool
+        Returns
+        -------
+        has_same_seed : bool
             True if the address has the same seed wallet as one of the seed wallet of the df_transactions
         """
 
@@ -120,18 +122,25 @@ class TransactionAnalyser(object):
         with a smart contract. This is a suspicious behavior.
         Parameters
         ----------
-        address
+        address : str
+            The address to check
 
         Returns
         -------
-
+        has_suspicious_seed_behavior : bool
+            True if the address has suspicious seed behavior
         """
         return self.has_same_seed(address) != self.has_same_seed_naive(address)
 
     def set_seed_wallet_naive(self):
         """
         Set the df_seed_wallet_naive attribute of the class. It holds the seed wallet of the addresses in 'EOA' using
-        a naive method that takes the from_address from the transaction of the address Returns -------
+        a naive method that takes the from_address from the transaction of the address
+
+        Returns
+        -------
+        None
+            Set the df_seed_wallet_naive attribute of the class
 
         """
         if self.gb_EOA_sorted is None:
@@ -145,7 +154,8 @@ class TransactionAnalyser(object):
         the seed wallet.
         Returns
         -------
-
+        None
+            Set the df_seed_wallet attribute of the class
         """
         df_filtered = self.df_transactions[self.df_transactions['EOA'] == self.df_transactions['to_address']]
         df_gb = df_filtered.sort_values('block_timestamp', ascending=True).groupby('EOA')
@@ -154,7 +164,12 @@ class TransactionAnalyser(object):
     def set_group_by_sorted_EOA(self):
         """
         Set the gb_EOA_sorted attribute of the class it holds the df_transactions sorted by block_timestamp and
-        grouped by EOA Returns -------
+        grouped by EOA
+
+        Returns
+        -------
+        None
+            Set the gb_EOA_sorted attribute of the class
 
         """
         self.gb_EOA_sorted = self.df_transactions.sort_values('block_timestamp', ascending=True).groupby('EOA')
@@ -191,7 +206,7 @@ class TransactionAnalyser(object):
         score_similar_behavior : float
             The similarity score of the address
         list_similar_address : map
-        The map of address and their similarity score
+            The map of address and their similarity score
 
         """
 
@@ -251,7 +266,7 @@ class TransactionAnalyser(object):
         score_similar_behavior : float
             The similarity score of the address
         list_similar_address : map
-        The map of address and their similarity score
+            The map of address and their similarity score
 
         """
 
@@ -343,6 +358,7 @@ class TransactionAnalyser(object):
         Returns
         -------
         has_similar_behavior : bool
+            True if the address has similar transactional behavior as another address
 
         """
         df_similar_address = self.transaction_similitude(address, algo_type=algo_type, char_tolerance=char_tolerance)
@@ -365,6 +381,7 @@ class TransactionAnalyser(object):
         Returns
         -------
         has_similar_behavior : bool
+            True if the address has similar transactional behavior as another address
 
         """
         df_similar_address = self.transaction_similitude_opti(address,
@@ -471,7 +488,8 @@ class TransactionAnalyser(object):
 
         Returns
         -------
-        None it sets the self.dict_add_string_tx or self.dict_add_value_string_tx attribute
+        None
+            it sets the self.dict_add_string_tx or self.dict_add_value_string_tx attribute
         """
         dict_string_tx = {}
         if self.gb_EOA_sorted is None:
