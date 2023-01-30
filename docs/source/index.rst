@@ -6,12 +6,13 @@ Pip install sybil-scorer
 ========================================
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 4
    :caption: Contents:
 
    flipside
    legos
    utils
+   modules
 
 Indices and tables
 ==================
