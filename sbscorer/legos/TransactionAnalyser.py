@@ -43,7 +43,7 @@ class TransactionAnalyser(object):
 
             If the df_seed_wallet is not set, it will set it
             Note df_transaction could contain transactions from multiple network but the seed wallet of the address is
-             filtered which prevent unexpected raise of the boolean.
+            filtered which prevent unexpected raise of the boolean.
 
             Parameters
             ----------
@@ -53,7 +53,7 @@ class TransactionAnalyser(object):
             Returns
             -------
             has_same_seed : bool
-            True if the address has the same seed wallet as one of the seed wallet of the df_transactions
+                True if the address has the same seed wallet as one of the seed wallet of the df_transactions
         """
 
         if self.df_seed_wallet_naive is None:
@@ -142,7 +142,7 @@ class TransactionAnalyser(object):
         """
         Set the df_seed_wallet attribute of the class. It holds the seed wallet of the addresses in 'EOA'
         of df_transactions. It is a non naive method that look for the first incoming transaction of the address to get
-         the seed wallet.
+        the seed wallet.
         Returns
         -------
 
