@@ -62,7 +62,7 @@ class TransactionAnalyserTest(unittest.TestCase):
         add = self.df_address.address.values[0]
         df_address_transactions = self.tx_analyser.get_address_transactions(add)
         array_tx = self.tx_analyser.get_array_transactions(df_address_transactions, add, algo_type="address_only")
-        self.assertEqual('x', array_tx[1])
+        self.assertEqual('x-0x763684e5742a42be570d975a889ba11587432b5c', array_tx[1])
 
     def test_transaction_similitude(self):
         address = "0x000aa644afae99d06c9a0ed0e41b1e61beca958d"
@@ -74,7 +74,7 @@ class TransactionAnalyserTest(unittest.TestCase):
         address_lcs = pd.read_csv(os.path.join(self.path_to_test_add, "tx_analyser_address_lcs.csv"))
         tx_analyser_lcs = TransactionAnalyser(self.df_tx, address_lcs)
         tx_sim = tx_analyser_lcs.transaction_similitude(address=address, algo_type="address_only", char_tolerance=0)
-        self.assertEqual(34, tx_sim.loc['0x000ad8bc3dfbe42d9a87686f67c69001a2006da4', 'lcs'])
+        self.assertEqual(17, tx_sim.loc['0x000ad8bc3dfbe42d9a87686f67c69001a2006da4', 'lcs'])
 
     def test_transaction_similitude_opti(self):
         address = "0x000aa644afae99d06c9a0ed0e41b1e61beca958d"
@@ -88,7 +88,7 @@ class TransactionAnalyserTest(unittest.TestCase):
         address_lcs = pd.read_csv(os.path.join(self.path_to_test_add, "tx_analyser_address_lcs.csv"))
         tx_analyser_lcs = TransactionAnalyser(self.df_tx, address_lcs)
         tx_sim = tx_analyser_lcs.transaction_similitude(address=address, algo_type="address_only", char_tolerance=0)
-        self.assertEqual(34, tx_sim.loc['0x000ad8bc3dfbe42d9a87686f67c69001a2006da4', 'lcs'])
+        self.assertEqual(17, tx_sim.loc['0x000ad8bc3dfbe42d9a87686f67c69001a2006da4', 'lcs'])
 
 
 if __name__ == '__main__':
