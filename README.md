@@ -1,72 +1,143 @@
 # sybil-scorer
 
-## What is it?
-Sybil scorer is a python package that provides useful classes and method to analyse the behaviour of addresses. 
-
+Sybil scorer is a python package that provides useful classes and method to analyse the behaviour of addresses.
 
 ## Installation
 
-Pip install sybil-scorer
+- Python 3.10
+- ```pip install sybil-scorer```
 
 ## What should I use?
 
-The package has two main sub-packages. 
-- flipside a package to easily retrieve large amount of data from he flipside API. 
-- legos a package to perform on chain transactions analysis. Currently the methods are made to easily detect Sybil behaviour. 
+The package has two main sub-packages.
 
-## Additional Data 
+- sbdata a package to easily retrieve large amount of data from he flipside API.
+- sblegos a package to perform on chain transactions analysis in order to detect potential sybil behaviour.
 
-Some data for an easier use of the package in the context of Gitcoin grants are made available at :
-https://huggingface.co/datasets/Poupou/Gitcoin-Grant-DataBuilder/tree/main
+The documentation of the package is available at https://sybil-scorer.readthedocs.io/en/latest/py-modindex.html.
+For an local version of the documentation you can build it using sphinx. with the following commands:
+
+```
+cd docs
+sphinx-apidoc -o ./source ../sbscorer
+make html
+```
+
+Then open the file docs/build/html/index.html in your browser.
+The local version of te documentation is prettier than the one hosted on readthedocs.
+
+### sbdata
+
+An example script to retrieve data from the flipside API is provided in the script folder:
+script/demo_extract_eth_txs_oss.py
+
+It walk you through the process of retrieving data from the flipside API and saving it in a folder.
+
+### sblegos and sbutils
+
+A jupyter notebook using both package is available as a jupyter notebook
+here https://github.com/poupou-web3/grant-exploration/blob/main/gr-oss-exploration-application.ipynb
+
+The following snippet of code will check if the address 0x0f4ee9631f4be0a63756515141281a3e2b293bbe as the same seed
+funder as any address in the grant.
+
+``` python
+import os
+import sys
+from pathlib import Path
+import numpy as np
+import pandas as pd
+from legos import TransactionAnalyser
+from utils import LoadData
+
+current_dir = Path(os.getcwd())
+
+# Load the addresses we want to study here all contributor to the climate grant
+path_to_grants = "data/grants"
+path_to_contributor_address = os.path.join(path_to_grants, "address")
+full_path_add = os.path.join(current_dir, path_to_contributor_address)
+df_address = pd.read_csv(os.path.join(full_path_add, "df_contribution_address_CLIMATE.csv"))
+list_address = df_address["address"].tolist()
+
+# Load the transactions of the addresses
+path_to_parent = Path(current_dir).parent
+path_to_tx = os.path.join(path_to_parent, 'transactions_full')
+data_loader = LoadData.LoadData(path_to_tx)
+
+# Load the transactions of the addresses in a dataframe
+df_tx = data_loader.create_df_tx('ethereum', list_address)
+
+# Initialise the TransactionAnalyser class
+tx_analyser = TransactionAnalyser.TransactionAnalyser(df_tx, df_address=df_address)
+df_matching_address = pd.DataFrame(df_tx.EOA.unique(), columns=["address"])
+
+# Check if the address has the same seed as any address in the grant returns a df with a boolean column 'seed_same_naive'
+df_matching_address['seed_same_naive'] = df_matching_address.loc[:, 'address'].apply(lambda x : tx_analyser.has_same_seed_naive(x))
+
+```
+
+## Additional Data
+
+Some data for an easier use of the package in the context of Gitcoin grants are made available on ocean.
 
 ### Ethereum Transaction Data
+
 Ethereum Transaction data are available for download on Ocean here:
+https://market.oceanprotocol.com/asset/did:op:826780ac16a444d65a0699e0e7629e67688c7b6a31ba2d1e672e3a2b398cab08
 
 These are all the transactions performed by users who contributed to the grant as of 20th of January 2022.
-It is organised with one csv file for each address to facilitate the loading of only the necessary data transactions when performing analysis on a specific grant or project. 
-The data was produced using the flipside package. 
+It is organised with one csv file for each address to facilitate the loading of only the necessary data transactions
+when performing analysis on a specific grant or project.
 
-### Grant Data and Addresses 
-The data provided by Gitcoin was standardised in the same format for all grants to make it easier to manipulate and find the desired wallet addresses of contributors to a specific project for example. 
+The data was produced using the sbdata package and the FlipsideApi class.
 
-These can be recreated by using the files provided by ODC/Gitcoin and running the Jupyter notebook in the Jupyter folder. 
-extract zip to have 
-"data/grants" folder at the root of the folder
+### Standardised Grant Data and Addresses
+
+The data provided by Gitcoin was standardised in the same format for all grants to make it easier to manipulate. For
+example to find all the wallet addresses of contributors to a specific project or grant.
+
+These can be recreated by using the files provided by ODC/Gitcoin. The files provided should be put with the
+architecture below. Each Grant is in a folder and inside there is the applications csv and the votes csv.
 
 Then run the jupyter notebook jupyter/normalize_contribution_data.ipynb
-this will create files in grants folder
+this will create files in the root of the grant folder as shown below.
 
-Then run file [extract_all_txs.py](https://github.com/poupou-web3/cluster-scorer/blob/main/src/main/extract_all_txs.py) 
-this will take a lot of time (not sure it is working yet)
+```commandline
+data/grants
+│   df_application_normalized.csv
+│   df_contribution_address_CLIMATE.csv
+│   df_contribution_address_ETHEREUM.csv
+│   df_contribution_address_FANTOM.csv
+│   df_contribution_address_GR15.csv
+│   df_contribution_address_OSS.csv
+│   df_contribution_address_UNICEF.csv
+│   df_contribution_normalized.csv
+│   df_new_grant_contributor_address.csv
+│   df_new_round_address.csv
+│   unique_ctbt_address.csv
+│
+├───Climate
+│       climate_grant_applications.csv
+│       climate_grant_votes.csv
+│
+├───Ethereum
+│       ethereum_grant_applications.csv
+│       ethereum_grant_votes.csv
+│
+├───Fantom
+│       fantom_grant_applications.csv
+│       fantom_grant_votes.csv
+│
+├───GR15
+│       GR15_contributions.csv
+│       GR15_grants_applications.json
+│
+├───oss
+│       oss_grant_applications.csv
+│       oss_grant_votes.csv
+│
+└───UNICEF
+        unicef_grant_applications.csv
+        unicef_grant_votes.csv
+```
 
-update: some address have so many transactions that the query time out, seting batching by 50 addresses or less should help fix that
-Another way could be to create a new query that retrieve all transactions from all chain for one address. and then export that to csv named with the _address_transactions.csv
-
-The issue is that there are more than 75 000 address to query and only 10 000 API call per rolling day.
-
-
-and then [extract_tags_labels.py](https://github.com/poupou-web3/cluster-scorer/blob/main/src/main/extract_tags_labels.py)
-this retrieves tags and labels for all addresses found in the transactions folder (not working to many addresses in unique_address WIP)
-
-## Specifications
-[Spec.md](https://github.com/poupou-web3/cluster-scorer/blob/main/spec.md) describes which legos we should build
-
-## Lego example 
-https://github.com/Fraud-Detection-and-Defense/lego-docs
-
-## Folder details
-Jupyter folder holds notebooks for data cleaning and data exploration
-
-src/main has many things I built in the previous hackhathon
-- features
-- plot
-- utils
--extract_etherscan
-- extract polygon
-
-these are methods and scripts that I used to extract data using etherscan and polygon scan they should be removed but may be useful. Especially for tsfresh lego we should reuse code I did in features and utils
-
-the Flipside repo holds the class that allows to query the FlipsideAPI. It is still in dev.
-
-
-tree .\reader-whl\ /F

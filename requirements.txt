@@ -1,5 +1,2 @@
 pandas==1.5.2
-tsfresh==0.20.0
-scikit-learn==1.2.0
-seaborn==0.12.2
 shroomdk==1.0.2
