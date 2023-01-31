@@ -4,7 +4,7 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = "sybil-scorer"
-version = "0.0.0-rc3"
+version = "0.0.0-rc4"
 description = "A sybil scoring tool"
 readme = "README.md"
 authors = [{ name = "Poupou", email = "poupou-web3@protonmail.com" }]
@@ -17,9 +17,6 @@ classifiers = [
 keywords = ["Sybil", "OSS", "Gitcoin", "Quadratic"]
 dependencies = [
     "pandas==1.5.2",
-    "tsfresh==0.20.0",
-    "scikit-learn==1.2.0",
-    "seaborn==0.12.2",
     "shroomdk==1.0.2",
     'tomli; python_version < "3.11"',
 ]
@@ -37,4 +34,4 @@ Homepage = "https://github.com/poupou-web3/cluster-scorer"
 
 [tool.setuptools.packages.find]
 where = ["sbscorer"]  # list of folders that contain the packages (["."] by default)
-include = ["flipside", "legos", "utils"]
+include = ["sbdata", "sblegos", "sbutils"]
