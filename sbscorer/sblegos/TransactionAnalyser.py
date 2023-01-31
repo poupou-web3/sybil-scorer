@@ -176,7 +176,8 @@ class TransactionAnalyser(object):
             Set the gb_EOA_sorted attribute of the class
 
         """
-        self.gb_EOA_sorted = self.df_transactions.sort_values('block_timestamp', ascending=True).groupby('EOA')
+        if self.gb_EOA_sorted is None:
+            self.gb_EOA_sorted = self.df_transactions.sort_values('block_timestamp', ascending=True).groupby('EOA')
 
     def has_less_than_n_transactions(self, address, n=5):
         """
@@ -193,7 +194,39 @@ class TransactionAnalyser(object):
         has_less_than_n_transactions : bool
             True if the address has less than n transactions
         """
+        self.set_group_by_sorted_EOA()
         return self.gb_EOA_sorted.get_group(address).shape[0] < n
+
+    def has_interacted_with_other_contributor(self, address):
+        """
+        Return a boolean whether the address has interacted with other contributor (not itself)
+        Parameters
+        ----------
+        address : str
+            The address to check
+
+        Returns
+        -------
+        has_interacted_with_other_contributor : bool
+            True if the address has interacted with one or more contributor of the grant
+        """
+        self.set_group_by_sorted_EOA()
+        contributors = self.get_contributors()
+        other_contributors = contributors[contributors != address]
+
+        df = self.gb_EOA_sorted.get_group(address)
+        unique_add_interacted = np.unique(np.append(df['to_address'].to_numpy(), df['from_address'].to_numpy()))
+        return np.isin(unique_add_interacted, other_contributors).any()
+
+    def get_contributors(self):
+        """
+        Return a list of contributors of the grant
+        Returns
+        -------
+        contributors : narray
+            The array of contributors of the grant
+        """
+        return self.df_transactions['EOA'].unique()
 
     def transaction_similitude(self, address, algo_type="address_only", char_tolerance=0):
         """
