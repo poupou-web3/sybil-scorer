@@ -1,13 +1,14 @@
-import pandas as pd
-import sys
 import os
+import sys
 from pathlib import Path
+
+import pandas as pd
 
 absolute_path = os.fspath(Path.cwd().parent.parent)
 if absolute_path not in sys.path:
     sys.path.append(absolute_path)
 
-from sbscorer.flipside.FlipsideApi import FlipsideApi
+from sbscorer.sbdata.FlipsideApi import FlipsideApi
 
 # read the address from oss grant
 

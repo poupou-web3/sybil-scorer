@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from sbscorer.flipside.FlipsideApi import FlipsideApi
+from sbscorer.sbdata.FlipsideApi import FlipsideApi
 
 absolute_path = os.fspath(Path.cwd().parent)
 if absolute_path not in sys.path:
@@ -110,7 +110,7 @@ class FlipsideApiTest(unittest.TestCase):
         flipside_api_large = FlipsideApi(self.api_key, max_address=1000)
         df_output = flipside_api_large.get_transactions(self.test_address_large, tx_chain)
         df_filter = df_output[df_output["block_timestamp"] <= '2023-01-01']
-        self.assertEqual(107031, df_filter.shape[0])  # 100k transactions the maximum per_page of flipside api
+        self.assertEqual(107031, df_filter.shape[0])  # 100k transactions the maximum per_page of sbdata api
 
     def test_get_transactions_ethereum(self):
         df_output = self.flipside_api.get_transactions(self.list_unique_address, "ethereum")
