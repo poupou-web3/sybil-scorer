@@ -1,6 +1,6 @@
 # sybil-scorer
 
-Sybil scorer is a python package that provides useful classes and method to analyse the behaviour of addresses.
+Sybil scorer is a python package that provides useful classes and methods to analyze the behavior of addresses.
 
 ## Installation
 
@@ -11,11 +11,11 @@ Sybil scorer is a python package that provides useful classes and method to anal
 
 The package has two main sub-packages.
 
-- sbdata a package to easily retrieve large amount of data from he flipside API.
-- sblegos a package to perform on chain transactions analysis in order to detect potential sybil behaviour.
+- sbdata is a package to easily retrieve a large amount of data from the flipside API.
+- sblegos a package to perform on-chain transactions analysis to detect potential Sybil behavior.
 
 The documentation of the package is available at https://sybil-scorer.readthedocs.io/en/latest/py-modindex.html.
-For an local version of the documentation you can build it using sphinx. with the following commands:
+For a local version of the documentation, you can build it using sphinx. with the following commands:
 
 ```
 cd docs
@@ -24,22 +24,21 @@ make html
 ```
 
 Then open the file docs/build/html/index.html in your browser.
-The local version of te documentation is prettier than the one hosted on readthedocs.
+The local version of the documentation is prettier than the one hosted on readthedocs.
 
 ### sbdata
 
 An example script to retrieve data from the flipside API is provided in the script folder:
 script/demo_extract_eth_txs_oss.py
 
-It walk you through the process of retrieving data from the flipside API and saving it in a folder.
+It walks you through the process of retrieving data from the flipside API and saving it in a folder.
 
 ### sblegos and sbutils
 
-A jupyter notebook using both package is available as a jupyter notebook
+A jupyter notebook using both packages is available as a jupyter notebook
 here https://github.com/poupou-web3/grant-exploration/blob/main/gr-oss-exploration-application.ipynb
 
-The following snippet of code will check if the address 0x0f4ee9631f4be0a63756515141281a3e2b293bbe as the same seed
-funder as any address in the grant.
+The following snippet of code will check if any address has the same seed as any other contributor to the climate grant
 
 ``` python
 import os
@@ -52,7 +51,7 @@ from utils import LoadData
 
 current_dir = Path(os.getcwd())
 
-# Load the addresses we want to study here all contributor to the climate grant
+# Load the addresses we want to study here all contributors to the climate grant
 path_to_grants = "data/grants"
 path_to_contributor_address = os.path.join(path_to_grants, "address")
 full_path_add = os.path.join(current_dir, path_to_contributor_address)
@@ -78,7 +77,7 @@ df_matching_address['seed_same_naive'] = df_matching_address.loc[:, 'address'].a
 
 ## Additional Data
 
-Some data for an easier use of the package in the context of Gitcoin grants are made available on ocean.
+Some data for easier use of the package in the context of Gitcoin grants are made available on Ocean market.
 
 ### Ethereum Transaction Data
 
@@ -86,18 +85,18 @@ Ethereum Transaction data are available for download on Ocean here:
 https://market.oceanprotocol.com/asset/did:op:826780ac16a444d65a0699e0e7629e67688c7b6a31ba2d1e672e3a2b398cab08
 
 These are all the transactions performed by users who contributed to the grant as of 20th of January 2022.
-It is organised with one csv file for each address to facilitate the loading of only the necessary data transactions
+It is organized with one CSV file for each address to facilitate the loading of only the necessary data transactions
 when performing analysis on a specific grant or project.
 
 The data was produced using the sbdata package and the FlipsideApi class.
 
 ### Standardised Grant Data and Addresses
 
-The data provided by Gitcoin was standardised in the same format for all grants to make it easier to manipulate. For
+The data provided by Gitcoin was standardized in the same format for all grants to make it easier to manipulate. For
 example to find all the wallet addresses of contributors to a specific project or grant.
 
 These can be recreated by using the files provided by ODC/Gitcoin. The files provided should be put with the
-architecture below. Each Grant is in a folder and inside there is the applications csv and the votes csv.
+architecture below. Each Grant is in a folder and inside there are the applications CSV and the votes CSV.
 
 Then run the jupyter notebook jupyter/normalize_contribution_data.ipynb
 this will create files in the root of the grant folder as shown below.
