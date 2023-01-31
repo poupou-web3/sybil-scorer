@@ -3,7 +3,7 @@ import unittest
 
 import pandas as pd
 
-from sbscorer.legos.TransactionAnalyser import TransactionAnalyser
+from sbscorer.sblegos.TransactionAnalyser import TransactionAnalyser
 from sbscorer.utils.LoadData import LoadData
 
 
