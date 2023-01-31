@@ -34,6 +34,9 @@ script/demo_extract_eth_txs_oss.py
 
 It walks you through the process of retrieving data from the flipside API and saving it in a folder.
 
+To use this package you will need an API key from flipside that you can get
+here : https://sdk.flipsidecrypto.xyz/shroomdk/apikeys
+
 ### sblegos and sbutils
 
 A jupyter notebook using both packages is available as a jupyter notebook
