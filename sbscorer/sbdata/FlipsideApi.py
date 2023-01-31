@@ -563,7 +563,8 @@ class FlipsideApi(object):
 
     def get_cross_chain_info_sql_query(self, array_address, info_type="label", limit=0):
         """
-        Get the sql query to extract the cross chain labels or tags for the array of addresses
+        Get the sql query to extract the cross chain labels or tags for the array of addresses.
+        WARNING you should not provide to much addresses in the array_address parameter because the query may time out.
         Parameters
         ----------
         array_address : array
