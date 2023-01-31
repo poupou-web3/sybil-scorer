@@ -42,6 +42,18 @@ class TransactionAnalyserTest(unittest.TestCase):
         address = "0x000b94c47e4a8d7a70be12c50fc35722a7596972"
         self.assertTrue(self.tx_analyser.has_suspicious_seed_behavior(address))
 
+    def test_has_less_than_n_transactions(self):
+        address = "0x000b94c47e4a8d7a70be12c50fc35722a7596972"
+        if self.tx_analyser.gb_EOA_sorted is None:
+            self.tx_analyser.set_group_by_sorted_EOA()
+        self.assertFalse(self.tx_analyser.has_less_than_n_transactions(address, 10))
+
+    def test_has_less_than_n_transactions_True(self):
+        address = "0xlcsad8bc3dfbe42d9a87686f67c69001a2006da4"
+        if self.tx_analyser.gb_EOA_sorted is None:
+            self.tx_analyser.set_group_by_sorted_EOA()
+        self.assertTrue(self.tx_analyser.has_less_than_n_transactions(address, 50))
+
     def test_get_array_transactions(self):
         add = self.df_address.address.values[0]
         df_address_transactions = self.tx_analyser.get_address_transactions(add)

@@ -178,6 +178,23 @@ class TransactionAnalyser(object):
         """
         self.gb_EOA_sorted = self.df_transactions.sort_values('block_timestamp', ascending=True).groupby('EOA')
 
+    def has_less_than_n_transactions(self, address, n=5):
+        """
+        Return a boolean whether the address has less than n transactions
+        Parameters
+        ----------
+        address : str
+            The address to check
+        n : int
+            The number of transactions
+
+        Returns
+        -------
+        has_less_than_n_transactions : bool
+            True if the address has less than n transactions
+        """
+        return self.gb_EOA_sorted.get_group(address).shape[0] < n
+
     def transaction_similitude(self, address, algo_type="address_only", char_tolerance=0):
         """
         Return a boolean and the list of addresses if it finds other addresses with similar actions.
