@@ -25,6 +25,7 @@ make html
 
 Then open the file docs/build/html/index.html in your browser.
 The local version of the documentation is prettier than the one hosted on readthedocs.
+![doc.png](img/doc.png)
 
 ### sbdata
 

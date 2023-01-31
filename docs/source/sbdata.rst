@@ -1,13 +1,13 @@
-utils package
-=============
+sbdata package
+==============
 
 Submodules
 ----------
 
-utils.LoadData module
----------------------
+sbdata.FlipsideApi module
+-------------------------
 
-.. automodule:: utils.LoadData
+.. automodule:: sbdata.FlipsideApi
    :members:
    :undoc-members:
    :show-inheritance:
@@ -15,7 +15,7 @@ utils.LoadData module
 Module contents
 ---------------
 
-.. automodule:: utils
+.. automodule:: sbdata
    :members:
    :undoc-members:
    :show-inheritance:

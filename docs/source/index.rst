@@ -12,9 +12,9 @@ You can install the package with
    :maxdepth: 4
    :caption: Contents:
 
-   flipside
-   legos
-   utils
+   sbdata
+   sblegos
+   sbutils
    modules
 
 Indices and tables

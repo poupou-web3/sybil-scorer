@@ -1,13 +1,13 @@
-flipside package
-================
+sbutils package
+===============
 
 Submodules
 ----------
 
-flipside.FlipsideApi module
----------------------------
+sbutils.LoadData module
+-----------------------
 
-.. automodule:: flipside.FlipsideApi
+.. automodule:: sbutils.LoadData
    :members:
    :undoc-members:
    :show-inheritance:
@@ -15,7 +15,7 @@ flipside.FlipsideApi module
 Module contents
 ---------------
 
-.. automodule:: flipside
+.. automodule:: sbutils
    :members:
    :undoc-members:
    :show-inheritance:
