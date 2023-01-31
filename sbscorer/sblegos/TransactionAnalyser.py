@@ -269,6 +269,9 @@ class TransactionAnalyser(object):
 
         # Get all the transactions of the address in a 1D array
         df_address_transactions = self.get_address_transactions(address)
+        shape_target = df_address_transactions.shape[0]
+        min_shape = max(1, shape_target / 3)
+        max_shape = max(shape_target, shape_target * 3)
         array_transactions_target = self.get_array_transactions(df_address_transactions, address, algo_type)
 
         # Get all the transactions from other contributors into an 1D array
@@ -277,13 +280,16 @@ class TransactionAnalyser(object):
         df_other_address.set_index('address', inplace=True)
         for add in df_other_address.index:
             df_other_address_transactions = self.get_address_transactions(add)
-            if df_other_address_transactions.shape[0] <= 1:
+            shape_other = df_other_address_transactions.shape[0]
+            if shape_other <= 1:
                 df_other_address.loc[add, 'lcs'] = 0
-            else:
+            elif min_shape < shape_other < max_shape:  # Heuristic to avoid comparing addresses with too different shapes
                 array_transactions_other = self.get_array_transactions(df_other_address_transactions, add, algo_type)
                 lcs = self.longest_common_sub_string(array_transactions_target, array_transactions_other,
                                                      char_tolerance)
                 df_other_address.loc[add, 'lcs'] = lcs
+            else:
+                df_other_address.loc[add, 'lcs'] = 0
 
         df_similar_address = df_other_address.loc[df_other_address['lcs'] > 5, :]
         df_similar_address['score'] = df_similar_address.loc[:, 'lcs'].apply(
@@ -341,15 +347,20 @@ class TransactionAnalyser(object):
         elif algo_type == "address_and_value":
             array_transactions_target = self.dict_add_value_string_tx.get(address)
 
+        shape_target = array_transactions_target.shape[0]
+        min_shape = max(1, shape_target / 4)
+        max_shape = max(shape_target, shape_target * 3)
+
         # Get all the transactions from other contributors into an 1D array
         df_other_address = self.df_address.loc[self.df_address['address'] != address, :]
         df_other_address['lcs'] = 0
         df_other_address.set_index('address', inplace=True)
         for add in df_other_address.index:
             df_other_address_transactions = self.get_address_transactions(add)
+            shape_other = df_other_address_transactions.shape[0]
             if df_other_address_transactions.shape[0] <= 1:
                 df_other_address.loc[add, 'lcs'] = 0
-            else:
+            elif min_shape < shape_other < max_shape:  # Heuristic to avoid comparing addresses with too different shapes
                 if algo_type == "address_only":
                     array_transactions_other = self.dict_add_string_tx.get(add)
                 elif algo_type == "address_and_value":
@@ -357,6 +368,8 @@ class TransactionAnalyser(object):
                 lcs = self.longest_common_sub_string(array_transactions_target, array_transactions_other,
                                                      char_tolerance)
                 df_other_address.loc[add, 'lcs'] = lcs
+            else:
+                df_other_address.loc[add, 'lcs'] = 0
 
         df_similar_address = df_other_address.loc[df_other_address['lcs'] > 5, :]
         df_similar_address['score'] = df_similar_address.loc[:, 'lcs'].apply(
@@ -448,7 +461,7 @@ class TransactionAnalyser(object):
 
     def get_address_transactions(self, address):
         """
-        Get transactions of an address from the self.df_transaction df
+        Get transactions of an address from the self.df_transaction df using the group by
         Parameters
         ----------
         address : str
@@ -460,7 +473,9 @@ class TransactionAnalyser(object):
             The data frame with the transactions of the address
 
         """
-        return self.get_address_transactions_add(self.df_transactions, address)
+        if self.gb_EOA_sorted is None:
+            self.set_group_by_sorted_EOA()
+        return self.gb_EOA_sorted.get_group(address)
 
     def get_address_transactions_add(self, df, address):
         """
