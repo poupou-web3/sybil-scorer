@@ -32,6 +32,18 @@ The local version of the documentation is prettier than the one hosted on readth
 An example script to retrieve data from the flipside API is provided in the script folder:
 script/demo_extract_eth_txs_oss.py
 
+It could also be used to retrieve transactional data from an address with some simple calls:
+
+``` python
+import os
+from sbdata.FlipsideApi import FlipsideApi
+
+api_key = os.environ['FLIPSIDE_API_KEY']
+flipside_api = FlipsideApi(api_key, max_address=1000)
+address = ['0x06cd8288dc001024ce0a1cf39caaedc0e2db9c82']
+tx_add_eth = flipside_api.get_transactions(address, chain='ethereum')
+```
+
 It walks you through the process of retrieving data from the flipside API and saving it in a folder.
 
 To use this package you will need an API key from flipside that you can get
