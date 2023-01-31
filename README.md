@@ -117,6 +117,13 @@ architecture below. Each Grant is in a folder and inside there are the applicati
 Then run the jupyter notebook jupyter/normalize_contribution_data.ipynb
 this will create files in the root of the grant folder as shown below.
 
+You can also download the standardized dara from Ocean market place here:
+
+- Standardized grant
+  contributions : https://market.oceanprotocol.com/asset/did:op:eac43d546ba84e5b82ddf4d2fbf4db9290711e8d2c2a167bce148b7209d41623
+- standardized grant
+  applications : https://market.oceanprotocol.com/asset/did:op:1d319077f7879e48b01aad52e4a69fc0ea06594c908575df4bd5cd015338b8cf
+
 ```commandline
 data/grants
 │   df_application_normalized.csv
