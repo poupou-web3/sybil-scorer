@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 
 absolute_path = os.fspath(Path.cwd().parent.parent.parent)
 if absolute_path not in sys.path:
@@ -278,7 +279,7 @@ class TransactionAnalyser(object):
         df_other_address = self.df_address.loc[self.df_address['address'] != address, :]
         df_other_address['lcs'] = 0
         df_other_address.set_index('address', inplace=True)
-        for add in df_other_address.index:
+        for add in df_other_address.index:  # could be improved with gb
             df_other_address_transactions = self.get_address_transactions(add)
             shape_other = df_other_address_transactions.shape[0]
             if shape_other <= 1:
@@ -481,7 +482,11 @@ class TransactionAnalyser(object):
         """
         if self.gb_EOA_sorted is None:
             self.set_group_by_sorted_EOA()
-        return self.gb_EOA_sorted.get_group(address)
+        try:
+            df = self.gb_EOA_sorted.get_group(address)
+        except Exception as e:
+            df = pd.DataFrame()
+        return df
 
     def get_address_transactions_add(self, df, address):
         """
