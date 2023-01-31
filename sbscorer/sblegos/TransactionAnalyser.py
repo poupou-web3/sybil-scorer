@@ -402,11 +402,17 @@ class TransactionAnalyser(object):
         """
         df_address_transactions.sort_values('block_timestamp', ascending=True, inplace=True)
         if algo_type == "address_only":
-            array_transactions = df_address_transactions.loc[:, ['from_address', 'to_address']] \
-                .replace(address, 'x').agg('-'.join, axis=1).values
+            try:
+                array_transactions = df_address_transactions.loc[:, ['from_address', 'to_address']].dropna().replace(
+                    address, 'x').agg('-'.join, axis=1).values
+            except Exception as e:
+                array_transactions = []
         elif algo_type == "address_and_value":
-            array_transactions = df_address_transactions.loc[:, ['from_address', 'value', 'to_address']] \
-                .replace(address, 'x').agg('-'.join, axis=1).values
+            try:
+                array_transactions = df_address_transactions.loc[:, ['from_address', 'value', 'to_address']].dropna() \
+                    .replace(address, 'x').agg('-'.join, axis=1).values
+            except Exception as e:
+                array_transactions = []
         else:
             raise ValueError("algo_type must be either address_only or address_and_value")
         return array_transactions
