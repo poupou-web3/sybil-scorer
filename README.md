@@ -7,25 +7,15 @@ Sybil scorer is a python package that provides useful classes and methods to ana
 - Python 3.10
 - ```pip install sybil-scorer```
 
-## What should I use?
+## What is inside?
 
 The package has two main sub-packages.
 
-- sbdata is a package to easily retrieve a large amount of data from the flipside API.
-- sblegos a package to perform on-chain transactions analysis to detect potential Sybil behavior.
+- **sbdata** is a package to easily retrieve a large amount of data from the flipside API.
+- **sblegos** a package to perform on-chain transactions analysis to detect potential Sybil behavior.
+- **sbutils** is a package that makes it easy to load the data extracted with sbdata and use it in sblegos.
 
-The documentation of the package is available at https://sybil-scorer.readthedocs.io/en/latest/py-modindex.html.
-For a local version of the documentation, you can build it using sphinx. with the following commands:
-
-```
-cd docs
-sphinx-apidoc -o ./source ../sbscorer
-make html
-```
-
-Then open the file docs/build/html/index.html in your browser.
-The local version of the documentation is prettier than the one hosted on readthedocs.
-![doc.png](img/doc.png)
+More details on the packages and example are provided below.
 
 ### sbdata
 
@@ -50,6 +40,20 @@ To use this package you will need an API key from flipside that you can get
 here : https://sdk.flipsidecrypto.xyz/shroomdk/apikeys
 
 ### sblegos and sbutils
+
+sblegos provides the following analysis legos:
+
+- **has_same_seed** : true if the address has the same seed as any other address in the grants contributors
+- **has_same_seed_naive** : true if the address has the same seed as any other address in the grants contributors with a
+  naive approach: address of the from_address of the first transaction.
+- **has_suspicious_seed_behavior** : true if has_same_seed is different from has_same_seed_naive. It means the user
+  performed some actions before funding is wallet.
+- **has_interacted_with_other_contributor** : true if the user as interacted with any other contributor to the grant
+- **has_less_than_n_transactions** : true if the user has less than n transactions.
+- **has_transaction_similitude** : true if the user has a transaction history that is similar to any other contributor
+  to the grant.
+- **has_transaction_similitude_opti** : an optimized version of has_transaction_similitude, when used across multiple
+  addresses.
 
 A jupyter notebook using both packages is available as a jupyter notebook
 here https://github.com/poupou-web3/grant-exploration/blob/main/gr-oss-exploration-application.ipynb
@@ -90,6 +94,21 @@ df_matching_address = pd.DataFrame(df_tx.EOA.unique(), columns=["address"])
 df_matching_address['seed_same_naive'] = df_matching_address.loc[:, 'address'].apply(lambda x : tx_analyser.has_same_seed_naive(x))
 
 ```
+
+## Documentation
+
+The documentation of the package is available at https://sybil-scorer.readthedocs.io/en/latest/py-modindex.html.
+For a local version of the documentation, you can build it using sphinx. with the following commands:
+
+```
+cd docs
+sphinx-apidoc -o ./source ../sbscorer
+make html
+```
+
+Then open the file docs/build/html/index.html in your browser.
+The local version of the documentation is prettier than the one hosted on readthedocs.
+![doc.png](img/doc.png)
 
 ## Additional Data
 
