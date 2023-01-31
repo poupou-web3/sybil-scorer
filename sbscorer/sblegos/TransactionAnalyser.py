@@ -215,7 +215,10 @@ class TransactionAnalyser(object):
         other_contributors = contributors[contributors != address]
 
         df = self.gb_EOA_sorted.get_group(address)
-        unique_add_interacted = np.unique(np.append(df['to_address'].to_numpy(), df['from_address'].to_numpy()))
+        add_interacted = np.append(df['to_address'].to_numpy(), df['from_address'].to_numpy())
+        add_interacted = add_interacted.astype('str')
+        unique_add_interacted = np.unique(add_interacted)
+        unique_add_interacted = unique_add_interacted[unique_add_interacted != address]
         return np.isin(unique_add_interacted, other_contributors).any()
 
     def get_contributors(self):
@@ -545,22 +548,24 @@ class TransactionAnalyser(object):
         None
             it sets the self.dict_add_string_tx or self.dict_add_value_string_tx attribute
         """
-        dict_string_tx = {}
+
         if self.gb_EOA_sorted is None:
             gb_address = self.df_transactions.groupby('EOA')
         else:
             gb_address = self.gb_EOA_sorted
+
+        if algo_type == "address_only":
+            if self.dict_add_string_tx is None:
+                self.dict_add_string_tx = self.get_dict_string_tx(gb_address, algo_type=algo_type)
+        elif algo_type == "address_and_value":
+            if self.dict_add_value_string_tx is None:
+                self.dict_add_value_string_tx = self.get_dict_string_tx(gb_address, algo_type=algo_type)
+        else:
+            raise ValueError("algo_type must be either address_only or address_and_value")
+
+    def get_dict_string_tx(self, gb_address, algo_type="address_only"):
+        dict_string_tx = {}
         for address, df_address in gb_address:
             array_transactions = self.get_array_transactions(df_address, address, algo_type)
             dict_string_tx[address] = array_transactions
-        # for address in self.df_address['address']:
-        #     df_address_transactions = self.get_address_transactions(address)
-        #     array_transactions = self.get_array_transactions(df_address_transactions, address, algo_type)
-        #     dict_string_tx[address] = array_transactions
-
-        if algo_type == "address_only":
-            self.dict_add_string_tx = dict_string_tx
-        elif algo_type == "address_and_value":
-            self.dict_add_value_string_tx = dict_string_tx
-        else:
-            raise ValueError("algo_type must be either address_only or address_and_value")
+        return dict_string_tx
