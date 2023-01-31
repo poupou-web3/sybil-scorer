@@ -24,7 +24,7 @@ test/resources/tmp
 /docs/source/legos.rst
 /docs/source/modules.rst
 /docs/source/plot.rst
-#/docs/source/utils.rst
+#/docs/source/sbutils.rst
 
 
 # Byte-compiled / optimized / DLL files

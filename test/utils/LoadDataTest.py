@@ -1,6 +1,6 @@
 import unittest
 
-from sbscorer.utils.LoadData import LoadData
+from sbscorer.sbutils.LoadData import LoadData
 
 
 class LoadDataTest(unittest.TestCase):

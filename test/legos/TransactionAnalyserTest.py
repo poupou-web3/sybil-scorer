@@ -4,7 +4,7 @@ import unittest
 import pandas as pd
 
 from sbscorer.sblegos.TransactionAnalyser import TransactionAnalyser
-from sbscorer.utils.LoadData import LoadData
+from sbscorer.sbutils.LoadData import LoadData
 
 
 class TransactionAnalyserTest(unittest.TestCase):
