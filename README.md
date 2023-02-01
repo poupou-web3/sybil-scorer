@@ -56,7 +56,7 @@ sblegos provides the following analysis of legos:
   addresses.
 
 A jupyter notebook using both packages is available as a jupyter notebook
-here https://github.com/poupou-web3/grant-exploration/blob/main/gr-oss-exploration-application.ipynb
+here https://github.com/poupou-web3/grant-exploration/blob/main/gr-climate-exploration.ipynb
 
 The following snippet of code will check if any address has the same seed as any other contributor to the climate grant
 
@@ -134,7 +134,8 @@ These can be recreated by using the files provided by ODC/Gitcoin. The files pro
 architecture below. Each Grant is in a folder and inside there are the applications CSV and the votes CSV.
 
 Then run the jupyter notebook jupyter/normalize_contribution_data.ipynb
-this will create files in the root of the grant folder as shown below.
+this will create files in the root of the -explo
+folder as shown below.
 
 You can also download the standardized data from Ocean market place here:
 
