@@ -15,7 +15,7 @@ The package has two main sub-packages.
 - **sblegos** a package to perform on-chain transactions analysis to detect potential Sybil behavior.
 - **sbutils** is a package that makes it easy to load the data extracted with sbdata and use it in sblegos.
 
-More details on the packages and example are provided below.
+More details on the packages and examples are provided below.
 
 ### sbdata
 
@@ -37,18 +37,18 @@ tx_add_eth = flipside_api.get_transactions(address, chain='ethereum')
 It walks you through the process of retrieving data from the flipside API and saving it in a folder.
 
 To use this package you will need an API key from flipside that you can get
-here : https://sdk.flipsidecrypto.xyz/shroomdk/apikeys
+here: https://sdk.flipsidecrypto.xyz/shroomdk/apikeys
 
 ### sblegos and sbutils
 
-sblegos provides the following analysis legos:
+sblegos provides the following analysis of legos:
 
 - **has_same_seed** : true if the address has the same seed as any other address in the grants contributors
 - **has_same_seed_naive** : true if the address has the same seed as any other address in the grants contributors with a
   naive approach: address of the from_address of the first transaction.
 - **has_suspicious_seed_behavior** : true if has_same_seed is different from has_same_seed_naive. It means the user
-  performed some actions before funding is wallet.
-- **has_interacted_with_other_contributor** : true if the user as interacted with any other contributor to the grant
+  performed some actions before funding his wallet.
+- **has_interacted_with_other_contributor** : true if the user has interacted with any other contributor to the grant
 - **has_less_than_n_transactions** : true if the user has less than n transactions.
 - **has_transaction_similitude** : true if the user has a transaction history that is similar to any other contributor
   to the grant.
@@ -136,7 +136,7 @@ architecture below. Each Grant is in a folder and inside there are the applicati
 Then run the jupyter notebook jupyter/normalize_contribution_data.ipynb
 this will create files in the root of the grant folder as shown below.
 
-You can also download the standardized dara from Ocean market place here:
+You can also download the standardized data from Ocean market place here:
 
 - Standardized grant
   contributions : https://market.oceanprotocol.com/asset/did:op:eac43d546ba84e5b82ddf4d2fbf4db9290711e8d2c2a167bce148b7209d41623
@@ -182,3 +182,12 @@ data/grants
         unicef_grant_votes.csv
 ```
 
+## Future works
+
+Future works include:
+
+- Improving the similarity algorithm performance.
+- Adding more transactional analysis lego.
+- Adding temporal features to a clustering algorithm as researched in the first
+  hackathon [submission](https://github.com/poupou-web3/GC-ODS-Sybil).
+- Adding legos using tags and labels of flipsidde API for example to filter similar seed wallet addresses.
