@@ -454,7 +454,7 @@ class TransactionAnalyser(object):
             else:
                 df_other_address.loc[add, 'lcs'] = 0
 
-        df_similar_address = df_other_address.loc[df_other_address['lcs'] > 5 * 66, :]
+        df_similar_address = df_other_address.loc[df_other_address['lcs'] > 5, :]
         df_similar_address['score'] = df_similar_address.loc[:, 'lcs'].apply(
             lambda x: min(x / (len(array_transactions_target) / 2), 1))
         return df_similar_address
@@ -486,14 +486,20 @@ class TransactionAnalyser(object):
         df_address_transactions.sort_values('block_timestamp', ascending=True, inplace=True)
         if algo_type == "address_only":
             try:
-                array_transactions = df_address_transactions.loc[:, ['from_address', 'to_address']].dropna().replace(
-                    address, 'x').agg('-'.join, axis=1).values
+                array_transactions = df_address_transactions.loc[:, ['from_address', 'to_address']].dropna() \
+                    .apply(lambda x: x.str[:8]) \
+                    .replace(address[:8], 'x') \
+                    .agg('-'.join, axis=1) \
+                    .values
             except Exception as e:
                 array_transactions = []
         elif algo_type == "address_and_value":
             try:
                 array_transactions = df_address_transactions.loc[:, ['from_address', 'value', 'to_address']].dropna() \
-                    .replace(address, 'x').agg('-'.join, axis=1).values
+                    .apply(lambda x: x.str[:8]) \
+                    .replace(address, 'x') \
+                    .agg('-'.join, axis=1) \
+                    .values
             except Exception as e:
                 array_transactions = []
         else:
@@ -678,9 +684,11 @@ class TransactionAnalyser(object):
             dict_string_tx[address] = array_transactions
         return dict_string_tx
 
-    def longest_common_sub_string_pylcs(self, array_transactions_target, array_transactions_other):
+    @staticmethod
+    def longest_common_sub_string_pylcs(array_transactions_target, array_transactions_other):
         string_target = "".join(array_transactions_target)
         string_other = "".join(array_transactions_other)
 
-        # 1 similar transaction equals to 64 add char + "-" + "x" = 66 char
-        return pylcs.lcs_sequence_length(string_target, string_other)
+        # 1 similar transaction equals to 8 first char of the address + "-" + "x" = 10 char
+        lcs = pylcs.lcs_string_length(string_target, string_other)
+        return lcs // 10  # quotient of the division
