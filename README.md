@@ -187,7 +187,6 @@ data/grants
 
 Future works include:
 
-- Improving the similarity algorithm performance.
 - Adding more transactional analysis lego.
 - Adding temporal features to a clustering algorithm as researched in the first
   hackathon [submission](https://github.com/poupou-web3/GC-ODS-Sybil).
