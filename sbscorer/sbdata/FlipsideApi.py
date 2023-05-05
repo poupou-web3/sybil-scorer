@@ -252,6 +252,7 @@ class FlipsideApi(object):
         -------
 
         """
+        np_address = np.char.lower(np_address.astype(str))
         for address in np_address:
             df_address_transactions = df[np.logical_or(
                 df.from_address == address, df.to_address == address)]
