@@ -2,7 +2,7 @@ import os
 
 import numpy as np
 import pandas as pd
-from shroomdk import ShroomDK
+from flipside import Flipside
 
 
 def save_csv(df, path_to_export, csv_file):
@@ -17,14 +17,16 @@ class FlipsideApi(object):
     It has methods to easily retrieve the data and save it to csv
     """
 
-    def __init__(self, api_key, page_size=100000, timeout_minutes=4, page_number=1, max_address=100, ttl=60,
-                 cached=True, retry_interval=1):
+    def __init__(self, api_key, max_age_minutes=30, ttl=30, timeout_minutes=5, retry_interval=1, page_size=100000,
+                 page_number=1, max_address=100, cached=True):
         """
         Init method of FlipsideApi
         Parameters
         ----------
         api_key : str
             The api key to use to query flipside https://sdk.flipsidecrypto.xyz/shroomdk/apikeys
+        max_age_minutes : int
+            The max age in minutes of the query default is 30 because queries are also cached for 30 minutes
         page_size : int
             The number of rows to return per page default is 100000
         timeout_minutes : int
@@ -42,8 +44,9 @@ class FlipsideApi(object):
         """
         self.api_key = api_key
 
-        # Initialize `ShroomDK`
-        self.sdk = ShroomDK(api_key)
+        # Initialize `FlipsideApi`
+        self.sdk = Flipside(api_key)
+        self.MAX_AGE_MINUTES = max_age_minutes
         # return up to 100,000 results per GET request on the query id
         self.PAGE_SIZE = page_size
         # timeout in minutes
@@ -117,6 +120,7 @@ class FlipsideApi(object):
         """
         try:
             query_result_set = self.sdk.query(sql,
+                                              max_age_minutes=self.MAX_AGE_MINUTES,
                                               page_size=self.PAGE_SIZE,
                                               page_number=page_number,
                                               timeout_minutes=self.TIMEOUT_MINUTES,
@@ -248,6 +252,7 @@ class FlipsideApi(object):
         -------
 
         """
+        np_address = np.char.lower(np_address.astype(str))
         for address in np_address:
             df_address_transactions = df[np.logical_or(
                 df.from_address == address, df.to_address == address)]

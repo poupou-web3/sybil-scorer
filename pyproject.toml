@@ -4,7 +4,7 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = "sybil-scorer"
-version = "0.0.0"
+version = "0.1.0"
 description = "A sybil scoring tool"
 readme = "README.md"
 authors = [{ name = "Poupou", email = "poupou-web3@protonmail.com" }]
@@ -16,8 +16,8 @@ classifiers = [
 ]
 keywords = ["Sybil", "OSS", "Gitcoin", "Quadratic"]
 dependencies = [
-    "pandas==1.5.2",
-    "shroomdk==1.0.2",
+    "pandas==2.0.1",
+    "flipside==2.0.3",
     'tomli; python_version < "3.11"',
 ]
 requires-python = ">=3.10"
@@ -30,7 +30,7 @@ dev = ["black",
     "pytest==7.2.1"]
 
 [project.urls]
-Homepage = "https://github.com/poupou-web3/cluster-scorer"
+Homepage = "https://github.com/poupou-web3/sybil-scorer"
 Documentation = "https://sybil-scorer.readthedocs.io/en/latest/py-modindex.html"
 
 [tool.setuptools.packages.find]
