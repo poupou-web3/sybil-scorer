@@ -6,7 +6,7 @@ api_key_eth.txt
 data/*
 vScorer
 vscorer
-v1scorer
+v2scorer
 vTest
 vPypi
 test/resources/tmp
