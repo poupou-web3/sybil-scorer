@@ -71,7 +71,7 @@ class FlipsideApi(object):
 
     def execute_query(self, sql):
         """
-        Execute a query and return a pandas dataframe, it will automatically query all the pages.
+        Execute a query and return a pandas dataframe, it will automatically query all the pages using class parameters.
         Parameters
         ----------
         sql : str
@@ -83,41 +83,8 @@ class FlipsideApi(object):
             The dataframe containing the results of the query
 
         """
-        df_size = self.PAGE_SIZE
         page_number = 1
-        list_df = []
-        while df_size == self.PAGE_SIZE:
-            df = self.execute_query_page(sql, page_number)
-            page_number += 1
-            list_df.append(df)
-            df_size = df.shape[0]
 
-        df = pd.concat(list_df)
-        if df.shape[0] == self.MAX_ROWS:
-            print("WARNING: the query is probably not returning all the results, you should decrease the max_address")
-        return df
-
-    def execute_query_page(self, sql, page_number):
-        """
-        Execute a query and return a pandas dataframe.
-        Parameters
-        ----------
-        sql : str
-            The sql query to execute
-        page_number : int
-            The page number to return
-
-        Returns
-        -------
-        df : pandas dataframe
-            The dataframe containing the results of the query
-
-        Exceptions
-        ----------
-        Exception : Exception
-            When the query times out. It will return an empty dataframe and then if you use the other methods will try
-            to rerun with a smaller number of addresses.
-        """
         try:
             query_result_set = self.sdk.query(sql,
                                               max_age_minutes=self.MAX_AGE_MINUTES,
@@ -132,7 +99,31 @@ class FlipsideApi(object):
             print(e)
             print(sql)
             return pd.DataFrame()  # return empty dataframe
-        return pd.DataFrame(query_result_set.records)
+
+        df = query_result_set.records
+        df_size = df.shape[0]
+        list_df = [df]
+        while df_size == self.PAGE_SIZE:
+            try:
+                page_results = self.sdk.get_query_results(
+                    query_result_set.query_id,
+                    page_number=page_number,
+                    page_size=self.PAGE_SIZE)
+                df = pd.DataFrame(page_results.records)
+                df_size = df.shape[0]
+
+            except Exception as e:
+                print(e)
+                print(f'failed on page {page_number}')
+                df_size = 0  # break the loop
+
+            page_number += 1
+            list_df.append(df)
+
+        df = pd.concat(list_df)
+        if df.shape[0] == self.MAX_ROWS:
+            print("WARNING: the query is probably not returning all the results, you should decrease the max_address")
+        return df
 
     def extract_transactions(self, extract_dir, array_address):
         """
