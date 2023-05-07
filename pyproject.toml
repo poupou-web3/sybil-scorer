@@ -19,6 +19,7 @@ dependencies = [
     "pandas==2.0.1",
     "flipside==2.0.3",
     'tomli; python_version < "3.11"',
+    'pylcs==0.0.8',
 ]
 requires-python = ">=3.10"
 
