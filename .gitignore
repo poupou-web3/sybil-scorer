@@ -10,7 +10,7 @@ v2scorer
 vTest
 vPypi
 test/resources/tmp
-
+.pypirc
 
 /docs/features.custom.rst
 /docs/features.rst
