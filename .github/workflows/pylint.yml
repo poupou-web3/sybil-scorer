@@ -20,4 +20,4 @@ jobs:
           pip install pylint
       - name: Analysing the code with pylint
         run: |
-          pylint --recursive sbscorer/*.py test/*.py
+          pylint $(git ls-files 'sbscorer/**/*.py' 'test/**/*.py')
