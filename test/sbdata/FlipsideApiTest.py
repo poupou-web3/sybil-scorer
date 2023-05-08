@@ -125,7 +125,7 @@ class FlipsideApiTest(unittest.TestCase):
         flipside_api_large = FlipsideApi(self.api_key, max_address=1000, page_size=50000)
         df_output = flipside_api_large.get_transactions(self.test_address_large, tx_chain)
         df_filter = df_output[df_output["block_timestamp"] <= '2023-01-01']
-        self.assertEqual(97031, df_filter.shape[0])  # 100k transactions the maximum per_page of sbdata api
+        self.assertEqual(114540, df_filter.shape[0])  # 100k transactions the maximum per_page of sbdata api
 
     def test_get_transactions_ethereum(self):
         df_output = self.flipside_api.get_transactions(self.list_unique_address, "ethereum")

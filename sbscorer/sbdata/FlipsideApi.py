@@ -100,7 +100,7 @@ class FlipsideApi(object):
             print(sql)
             return pd.DataFrame()  # return empty dataframe
 
-        df = query_result_set.records
+        df = pd.DataFrame(query_result_set.records)
         df_size = df.shape[0]
         list_df = [df]
         while df_size == self.PAGE_SIZE:
