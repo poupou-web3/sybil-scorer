@@ -32,12 +32,12 @@ class TransactionAnalyser(object):
             The dataframe containing a 'address' column 
         """
         self.df_transactions = df_transactions
-        # holds a df of address/seed wallet so we don't have to create it each time
+        # holds a df of address/seed wallet we don't have to create it each time
         self.df_seed_wallet_naive = None
         self.df_seed_wallet = None
         self.gb_EOA_sorted = None
         self.df_address = df_address
-        # We use a df address so we can load all transactions in memmory and then change the address list easily
+        # We use a df address we can load all transactions in memory and then change the address list easily
         # for example to calculate on a specific project
 
         # store the array of string transactions
@@ -156,7 +156,7 @@ class TransactionAnalyser(object):
     def set_seed_wallet(self):
         """
         Set the df_seed_wallet attribute of the class. It holds the seed wallet of the addresses in 'EOA'
-        of df_transactions. It is a non naive method that look for the first incoming transaction of the address to get
+        of df_transactions. It is a non-naive method that look for the first incoming transaction of the address to get
         the seed wallet.
         Returns
         -------
@@ -233,156 +233,10 @@ class TransactionAnalyser(object):
         """
         return self.df_transactions['EOA'].unique()
 
-    def transaction_similitude(self, address, algo_type="address_only", char_tolerance=0):
-        """
-        Return a boolean and the list of addresses if it finds other addresses with similar actions.
-
-        The algorithm is the following:
-        1. Transform all transactions in to a String of the form: "from_address,
-        to_address, from_address, to_address, ..."
-        2. Replace the address of the wallet by "x" to ba able to compare the behavior of two addresses.
-        3. Run the algorithm common longest substring on all the transactions
-        4. If the longest common substring is longer than 5, return true for the current address.
-        5. Keep iterating to find the longest common substring and then the score is
-        the length of the longest common substring divided by half the length of the target address string.
-        The score is the min(score, 1) to avoid having a score > 1.
-
-        Parameters
-        ----------
-        address : str
-            The address to check
-        algo_type : str
-            The type of algorithm to use. Default is "address_only" which only use the address to compare.
-            options are: address_only, address_and_value
-        char_tolerance : int
-            The number of character to skip when using the longest common substring algorithm. Default is 0.
-            1 may be a good choice when algo_type is "address_and_value".
-
-        Returns
-        -------
-        has_similar_behavior : bool
-            True if the address has similar behavior as another address
-        score_similar_behavior : float
-            The similarity score of the address
-        list_similar_address : map
-            The map of address and their similarity score
-
-        """
-
-        # Get all the transactions of the address in a 1D array
-        df_address_transactions = self.get_address_transactions(address)
-        shape_target = df_address_transactions.shape[0]
-        min_shape = max(1, shape_target / 3)
-        max_shape = max(shape_target, shape_target * 3)
-        array_transactions_target = self.get_array_transactions(df_address_transactions, address, algo_type)
-
-        # Get all the transactions from other contributors into an 1D array
-        if self.df_address is None:
-            self.df_address = pd.DataFrame(self.EOA.unique(), columns=['address'])
-        df_other_address = self.df_address.loc[self.df_address['address'] != address, :]
-        df_other_address['lcs'] = 0
-        df_other_address.set_index('address', inplace=True)
-        for add, df_other_address_transactions in self.gb_EOA_sorted:
-            if add != address:
-                shape_other = df_other_address_transactions.shape[0]
-                if shape_other <= 1:
-                    df_other_address.loc[add, 'lcs'] = 0
-                elif min_shape < shape_other < max_shape:  # Heuristic to avoid comparing addresses with too
-                    # different shapes
-                    array_transactions_other = self.get_array_transactions(df_other_address_transactions, add,
-                                                                           algo_type)
-                    lcs = self.longest_common_sub_string(array_transactions_target, array_transactions_other,
-                                                         char_tolerance)
-                    df_other_address.loc[add, 'lcs'] = lcs
-                else:
-                    df_other_address.loc[add, 'lcs'] = 0
-
-        df_similar_address = df_other_address.loc[df_other_address['lcs'] > 5, :]
-        df_similar_address['score'] = df_similar_address.loc[:, 'lcs'].apply(
-            lambda x: min(x / (len(array_transactions_target) / 2), 1))
-        return df_similar_address
-
-    def transaction_similitude_opti(self, address, algo_type="address_only", char_tolerance=0):
-        """
-        Return a boolean and the list of addresses if it finds other addresses with similar actions.
-        it first store some repetitive tasks into a class variable and then use it to speed up the process.
-
-        The algorithm is the following:
-        1. Transform all transactions in to a String of the form: "from_address,
-        to_address, from_address, to_address, ..."
-        2. Replace the address of the wallet by "x" to ba able to compare the behavior of two addresses.
-        3. Run the algorithm common longest substring on all the transactions
-        4. If the longest common substring is longer than 5, return true for the current address.
-        5. Keep iterating to find the longest common substring and then the score is
-        the length of the longest common substring divided by half the length of the target address string.
-        The score is the min(score, 1) to avoid having a score > 1.
-
-        Parameters
-        ----------
-        address : str
-            The address to check
-        algo_type : str
-            The type of algorithm to use. Default is "address_only" which only use the address to compare.
-            options are: address_only, address_and_value
-        char_tolerance : int
-            The number of character to skip when using the longest common substring algorithm. Default is 0.
-            1 may be a good choice when algo_type is "address_and_value".
-
-        Returns
-        -------
-        has_similar_behavior : bool
-            True if the address has similar behavior as another address
-        score_similar_behavior : float
-            The similarity score of the address
-        list_similar_address : map
-            The map of address and their similarity score
-
-        """
-
-        # Transform all transactions into a 1D string
-        if algo_type == "address_only" and self.dict_add_string_tx is None:
-            self.set_dict_add_string_transactions(algo_type)
-        elif algo_type == "address_and_value" and self.dict_add_value_string_tx is None:
-            self.set_dict_add_string_transactions(algo_type)
-        else:
-            Exception("algo_type not supported")
-
-        # Get all the transactions of the address in a 1D array
-        if algo_type == "address_only":
-            array_transactions_target = self.dict_add_string_tx.get(address)
-        elif algo_type == "address_and_value":
-            array_transactions_target = self.dict_add_value_string_tx.get(address)
-
-        shape_target = array_transactions_target.shape[0]
-        min_shape = max(1, shape_target / 4)
-        max_shape = max(shape_target, shape_target * 3)
-
-        # Get all the transactions from other contributors into an 1D array
-        df_other_address = self.df_address.loc[self.df_address['address'] != address, :].copy()
-        df_other_address['lcs'] = 0
-        df_other_address.set_index('address', inplace=True)
-        for add in df_other_address.index:
-            df_other_address_transactions = self.get_address_transactions(add)
-            shape_other = df_other_address_transactions.shape[0]
-            if min_shape < shape_other < max_shape:  # Heuristic to avoid comparing addresses with too different shapes
-                if algo_type == "address_only":
-                    array_transactions_other = self.dict_add_string_tx.get(add)
-                elif algo_type == "address_and_value":
-                    array_transactions_other = self.dict_add_value_string_tx.get(add)
-                lcs = self.longest_common_sub_string(array_transactions_target, array_transactions_other,
-                                                     char_tolerance)
-                df_other_address.at[add, 'lcs'] = lcs
-            # else: it was initialized to 0 do not do it for faster computation
-
-        df_similar_address = df_other_address.loc[df_other_address['lcs'] > 5, :]
-        df_similar_address['score'] = df_similar_address.loc[:, 'lcs'].apply(
-            lambda x: min(x / (len(array_transactions_target) / 2), 1))
-        return df_similar_address
-
     def transaction_similitude_pylcs(self, address, algo_type="address_only"):
         """
         Return a boolean and the list of addresses if it finds other addresses with similar actions.
-        it first store some repetitive tasks into a class attribute and then use it to speed up the process.
+        it first stores some repetitive tasks into a class attribute and then use it to speed up the process.
 
         The algorithm is the following:
         1. Transform all transactions in to a String of the form: "from_address,
@@ -443,7 +297,7 @@ class TransactionAnalyser(object):
                 if min_shape < shape_other < max_shape:  # Heuristic to avoid comparing addresses with too different shapes
                     if algo_type == "address_only":
                         array_transactions_other = self.dict_add_string_tx.get(add)
-                    elif algo_type == "address_and_value":
+                    else:
                         array_transactions_other = self.dict_add_value_string_tx.get(add)
                     lcs = self.longest_common_sub_string_pylcs(array_transactions_target, array_transactions_other)
                     list_lcs.append(lcs)
@@ -507,54 +361,6 @@ class TransactionAnalyser(object):
             raise ValueError("algo_type must be either address_only or address_and_value")
         return array_transactions
 
-    def has_transaction_similitude(self, address, algo_type="address_only", char_tolerance=0):
-        """
-        Return a boolean whether the address has similar behavior as another address.
-        The algorithm check against all addresses in df_transactions using transaction_similitude
-
-        Parameters
-        ----------
-        algo_type : str
-            The type of algorithm to use. Default is "address_only".
-        char_tolerance : int
-            The number of character to skip when using the longest common substring algorithm. Default is 0.
-        address : str
-            The address to check
-
-        Returns
-        -------
-        has_similar_behavior : bool
-            True if the address has similar transactional behavior as another address
-
-        """
-        df_similar_address = self.transaction_similitude(address, algo_type=algo_type, char_tolerance=char_tolerance)
-        return df_similar_address.shape[0] > 0
-
-    def has_transaction_similitude_opti(self, address, algo_type="address_only", char_tolerance=0):
-        """
-        Return a boolean whether the address has similar behavior as another address.
-        The algorithm check against all addresses in df_transactions using transaction_similitude
-
-        Parameters
-        ----------
-        algo_type : str
-            The type of algorithm to use. Default is "address_only".
-        char_tolerance : int
-            The number of character to skip when using the longest common substring algorithm. Default is 0.
-        address : str
-            The address to check
-
-        Returns
-        -------
-        has_similar_behavior : bool
-            True if the address has similar transactional behavior as another address
-
-        """
-        df_similar_address = self.transaction_similitude_opti(address,
-                                                              algo_type=algo_type,
-                                                              char_tolerance=char_tolerance)
-        return df_similar_address.shape[0] > 0
-
     def get_address_transactions(self, address):
         """
         Get transactions of an address from the self.df_transaction df using the group by
@@ -574,8 +380,9 @@ class TransactionAnalyser(object):
         except Exception as e:
             if self.gb_EOA_sorted is None:
                 self.set_group_by_sorted_EOA()
-                self.get_address_transactions(address)
-            df = pd.DataFrame()
+                df = self.get_address_transactions(address)
+            else:
+                df = pd.DataFrame()
         return df
 
     def get_address_transactions_add(self, df, address):
@@ -596,59 +403,6 @@ class TransactionAnalyser(object):
 
         """
         return df[self.df_transactions['EOA'] == address]
-
-    @staticmethod
-    def longest_common_sub_string(target_array, comp_array, char_tolerance=0):
-        """
-        This method return the length of the longest common substring between two arrays of strings.
-        Parameters
-        ----------
-        target_array : narray
-            The array of strings to compare
-        comp_array : narray
-            The array of strings to compare
-        char_tolerance : int
-            The number of character to skip when comparing two strings not available yet
-        Returns
-        -------
-        lcs : int
-            The length of the longest common substring
-        """
-
-        if char_tolerance == 0:
-            m = len(comp_array)
-            n = len(target_array)
-            # dp will store solutions as the iteration goes on
-            dp = np.zeros((2, m + 1), dtype=int)
-
-            res = 0
-
-            for i in range(1, n + 1):
-                for j in range(1, m + 1):
-                    if target_array[i - 1] == comp_array[j - 1]:
-                        dp[i % 2][j] = dp[(i - 1) % 2][j - 1] + 1
-                        if dp[i % 2][j] > res:
-                            res = dp[i % 2][j]
-                    else:
-                        dp[i % 2][j] = 0
-            return res
-
-        else:
-            substring = []
-            longest = 0
-            for i in range(len(input)):
-                c_set = set()
-                for j in range(i, len(input)):
-                    c_set.add(input[j])
-                    if len(c_set) > 2:
-                        break
-                    if j + 1 - i == longest:
-                        substring.append(input[i:j + 1])
-                    if j + 1 - i > longest:
-                        longest = j + 1 - i
-                        substring = []
-                        substring.append(input[i:j + 1])
-            return len(substring)
 
     def set_dict_add_string_transactions(self, algo_type="address_only"):
         """
