@@ -277,6 +277,8 @@ class TransactionAnalyser(object):
         array_transactions_target = self.get_array_transactions(df_address_transactions, address, algo_type)
 
         # Get all the transactions from other contributors into an 1D array
+        if self.df_address is None:
+            self.df_address = pd.DataFrame(self.EOA.unique(), columns=['address'])
         df_other_address = self.df_address.loc[self.df_address['address'] != address, :]
         df_other_address['lcs'] = 0
         df_other_address.set_index('address', inplace=True)
@@ -436,6 +438,8 @@ class TransactionAnalyser(object):
         max_shape = max(shape_target, shape_target * 3)
 
         # Get all the transactions from other contributors into an 1D array
+        if self.df_address.columns != ['address']:
+            self.df_address.columns = ['address']
         df_other_address = self.df_address.loc[self.df_address['address'] != address, :]
         df_other_address['lcs'] = 0
         df_other_address.set_index('address', inplace=True)
