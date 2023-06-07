@@ -274,16 +274,16 @@ class TransactionAnalyser(object):
         if algo_type == "address_only":
             if self.dict_add_string_tx is None:
                 self.set_dict_add_string_transactions(algo_type)
-            array_transactions_target = self.dict_add_string_tx.get(address)
+            str_transactions_target = self.dict_add_string_tx.get(address)
         elif algo_type == "address_and_value":
             if self.dict_add_value_string_tx is None:
                 self.set_dict_add_string_transactions(algo_type)
             # Get all the transactions of the address in a 1D array
-            array_transactions_target = self.dict_add_value_string_tx.get(address)
+            str_transactions_target = self.dict_add_value_string_tx.get(address)
         else:
             Exception("algo_type not supported")
 
-        shape_target = array_transactions_target.shape[0]
+        shape_target = self.get_address_transactions(address).shape[0]
         min_shape = max(1, shape_target / 4)
         max_shape = max(shape_target, shape_target * 3)
 
@@ -292,14 +292,13 @@ class TransactionAnalyser(object):
         list_lcs = []
         for add in self.df_address['address']:
             if add != address:
-                df_other_address_transactions = self.get_address_transactions(add)
-                shape_other = df_other_address_transactions.shape[0]
+                shape_other = self.get_address_transactions(add).shape[0]
                 if min_shape < shape_other < max_shape:  # Heuristic to avoid comparing addresses with too different shapes
                     if algo_type == "address_only":
-                        array_transactions_other = self.dict_add_string_tx.get(add)
+                        str_transactions_other = self.dict_add_string_tx.get(add)
                     else:
-                        array_transactions_other = self.dict_add_value_string_tx.get(add)
-                    lcs = self.longest_common_sub_string_pylcs(array_transactions_target, array_transactions_other)
+                        str_transactions_other = self.dict_add_value_string_tx.get(add)
+                    lcs = self.longest_common_sub_string_pylcs(str_transactions_target, str_transactions_other)
                     list_lcs.append(lcs)
                 else:
                     list_lcs.append(0)
@@ -309,7 +308,7 @@ class TransactionAnalyser(object):
         mask = np.array(list_lcs) > 5
         df_similar_address = self.df_address.loc[mask, :].copy()
         df_similar_address['lcs'] = np.array(list_lcs)[mask]
-        len_tx = len(array_transactions_target) / 2  # Divide by 2 because we have from_address and to_address
+        len_tx = len(str_transactions_target) / 2  # Divide by 2 because we have from_address and to_address
         df_similar_address['score'] = df_similar_address.loc[:, 'lcs'].apply(
             lambda x: min(x / len_tx, 1))
         return df_similar_address.set_index('address')
@@ -437,13 +436,11 @@ class TransactionAnalyser(object):
         dict_string_tx = {}
         for address, df_address in gb_address:
             array_transactions = self.get_array_transactions(df_address, address, algo_type)
-            dict_string_tx[address] = array_transactions
+            dict_string_tx[address] = "".join(array_transactions)
         return dict_string_tx
 
     @staticmethod
-    def longest_common_sub_string_pylcs(array_transactions_target, array_transactions_other):
-        string_target = "".join(array_transactions_target)
-        string_other = "".join(array_transactions_other)
+    def longest_common_sub_string_pylcs(string_target, string_other):
 
         # 1 similar transaction equals to 8 first char of the address + "-" + "x" = 10 char
         lcs = pylcs.lcs_string_length(string_target, string_other)
