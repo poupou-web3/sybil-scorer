@@ -417,48 +417,48 @@ class TransactionAnalyser(object):
         """
 
         # Transform all transactions into a 1D string
-        if algo_type == "address_only" and self.dict_add_string_tx is None:
-            self.set_dict_add_string_transactions(algo_type)
-        elif algo_type == "address_and_value" and self.dict_add_value_string_tx is None:
-            self.set_dict_add_string_transactions(algo_type)
-        else:
-            Exception("algo_type not supported")
-
-        # Get all the transactions of the address in a 1D array
         if algo_type == "address_only":
+            if self.dict_add_string_tx is None:
+                self.set_dict_add_string_transactions(algo_type)
             array_transactions_target = self.dict_add_string_tx.get(address)
         elif algo_type == "address_and_value":
+            if self.dict_add_value_string_tx is None:
+                self.set_dict_add_string_transactions(algo_type)
+            # Get all the transactions of the address in a 1D array
             array_transactions_target = self.dict_add_value_string_tx.get(address)
+        else:
+            Exception("algo_type not supported")
 
         shape_target = array_transactions_target.shape[0]
         min_shape = max(1, shape_target / 4)
         max_shape = max(shape_target, shape_target * 3)
 
-        # Get all the transactions from other contributors into an 1D array
         if self.df_address.columns != ['address']:
             self.df_address.columns = ['address']
-        df_other_address = self.df_address.loc[self.df_address['address'] != address, :]
-        df_other_address['lcs'] = 0
-        df_other_address.set_index('address', inplace=True)
-        for add in df_other_address.index:
-            df_other_address_transactions = self.get_address_transactions(add)
-            shape_other = df_other_address_transactions.shape[0]
-            if df_other_address_transactions.shape[0] <= 1:
-                df_other_address.loc[add, 'lcs'] = 0
-            elif min_shape < shape_other < max_shape:  # Heuristic to avoid comparing addresses with too different shapes
-                if algo_type == "address_only":
-                    array_transactions_other = self.dict_add_string_tx.get(add)
-                elif algo_type == "address_and_value":
-                    array_transactions_other = self.dict_add_value_string_tx.get(add)
-                lcs = self.longest_common_sub_string_pylcs(array_transactions_target, array_transactions_other)
-                df_other_address.loc[add, 'lcs'] = lcs
+        list_lcs = []
+        for add in self.df_address['address']:
+            if add != address:
+                df_other_address_transactions = self.get_address_transactions(add)
+                shape_other = df_other_address_transactions.shape[0]
+                if min_shape < shape_other < max_shape:  # Heuristic to avoid comparing addresses with too different shapes
+                    if algo_type == "address_only":
+                        array_transactions_other = self.dict_add_string_tx.get(add)
+                    elif algo_type == "address_and_value":
+                        array_transactions_other = self.dict_add_value_string_tx.get(add)
+                    lcs = self.longest_common_sub_string_pylcs(array_transactions_target, array_transactions_other)
+                    list_lcs.append(lcs)
+                else:
+                    list_lcs.append(0)
             else:
-                df_other_address.loc[add, 'lcs'] = 0
+                list_lcs.append(0)
 
-        df_similar_address = df_other_address.loc[df_other_address['lcs'] > 5, :]
+        mask = np.array(list_lcs) > 5
+        df_similar_address = self.df_address.loc[mask, :].copy()
+        df_similar_address['lcs'] = np.array(list_lcs)[mask]
+        len_tx = len(array_transactions_target) / 2  # Divide by 2 because we have from_address and to_address
         df_similar_address['score'] = df_similar_address.loc[:, 'lcs'].apply(
-            lambda x: min(x / (len(array_transactions_target) / 2), 1))
-        return df_similar_address
+            lambda x: min(x / len_tx, 1))
+        return df_similar_address.set_index('address')
 
     @staticmethod
     def get_array_transactions(df_address_transactions, address, algo_type="address_only"):
