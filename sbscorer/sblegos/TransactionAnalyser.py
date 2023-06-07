@@ -358,24 +358,21 @@ class TransactionAnalyser(object):
         max_shape = max(shape_target, shape_target * 3)
 
         # Get all the transactions from other contributors into an 1D array
-        df_other_address = self.df_address.loc[self.df_address['address'] != address, :]
+        df_other_address = self.df_address.loc[self.df_address['address'] != address, :].copy()
         df_other_address['lcs'] = 0
         df_other_address.set_index('address', inplace=True)
         for add in df_other_address.index:
             df_other_address_transactions = self.get_address_transactions(add)
             shape_other = df_other_address_transactions.shape[0]
-            if df_other_address_transactions.shape[0] <= 1:
-                df_other_address.loc[add, 'lcs'] = 0
-            elif min_shape < shape_other < max_shape:  # Heuristic to avoid comparing addresses with too different shapes
+            if min_shape < shape_other < max_shape:  # Heuristic to avoid comparing addresses with too different shapes
                 if algo_type == "address_only":
                     array_transactions_other = self.dict_add_string_tx.get(add)
                 elif algo_type == "address_and_value":
                     array_transactions_other = self.dict_add_value_string_tx.get(add)
                 lcs = self.longest_common_sub_string(array_transactions_target, array_transactions_other,
                                                      char_tolerance)
-                df_other_address.loc[add, 'lcs'] = lcs
-            else:
-                df_other_address.loc[add, 'lcs'] = 0
+                df_other_address.at[add, 'lcs'] = lcs
+            # else: it was initialized to 0 do not do it for faster computation
 
         df_similar_address = df_other_address.loc[df_other_address['lcs'] > 5, :]
         df_similar_address['score'] = df_similar_address.loc[:, 'lcs'].apply(
