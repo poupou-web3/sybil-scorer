@@ -233,7 +233,7 @@ class TransactionAnalyser(object):
         """
         return self.df_transactions['EOA'].unique()
 
-    def transaction_similitude_pylcs(self, address, algo_type="address_only"):
+    def transaction_similitude_pylcs(self, address, algo_type="address_only", minimum_sim_tx=5):
         """
         Return a boolean and the list of addresses if it finds other addresses with similar actions.
         it first stores some repetitive tasks into a class attribute and then use it to speed up the process.
@@ -255,6 +255,8 @@ class TransactionAnalyser(object):
         algo_type : str
             The type of algorithm to use. Default is "address_only" which only use the address to compare.
             options are: address_only, address_and_value
+        minimum_sim_tx : int
+            The number of transactions to use to compare. Default is 5.
         char_tolerance : int
             The number of character to skip when using the longest common substring algorithm. Default is 0.
             1 may be a good choice when algo_type is "address_and_value".
@@ -305,7 +307,10 @@ class TransactionAnalyser(object):
             else:
                 list_lcs.append(0)
 
-        mask = np.array(list_lcs) > 5
+        if minimum_sim_tx == -1:
+            mask = np.array(list_lcs) > max(3, min(10, shape_target / 4))
+        else:
+            mask = np.array(list_lcs) > minimum_sim_tx
         df_similar_address = self.df_address.loc[mask, :].copy()
         df_similar_address['lcs'] = np.array(list_lcs)[mask]
         len_tx = len(str_transactions_target) / 2  # Divide by 2 because we have from_address and to_address
