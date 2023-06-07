@@ -569,11 +569,12 @@ class TransactionAnalyser(object):
             The data frame with the transactions of the address
 
         """
-        if self.gb_EOA_sorted is None:
-            self.set_group_by_sorted_EOA()
         try:
             df = self.gb_EOA_sorted.get_group(address)
         except Exception as e:
+            if self.gb_EOA_sorted is None:
+                self.set_group_by_sorted_EOA()
+                self.get_address_transactions(address)
             df = pd.DataFrame()
         return df
 
