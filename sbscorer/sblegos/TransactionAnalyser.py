@@ -196,8 +196,23 @@ class TransactionAnalyser(object):
         has_less_than_n_transactions : bool
             True if the address has less than n transactions
         """
+        return self.count_transactions(address) < n
+
+    def count_transactions(self, address):
+        """
+        Return the number of transactions of the address
+        Parameters
+        ----------
+        address : str
+            The address to check
+
+        Returns
+        -------
+        count_transactions : int
+            The number of transactions of the address
+        """
         self.set_group_by_sorted_EOA()
-        return self.gb_EOA_sorted.get_group(address).shape[0] < n
+        return self.gb_EOA_sorted.get_group(address).shape[0]
 
     def has_interacted_with_other_contributor(self, address):
         """

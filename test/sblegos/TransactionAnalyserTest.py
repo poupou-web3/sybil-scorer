@@ -46,6 +46,10 @@ class TransactionAnalyserTest(unittest.TestCase):
         address = "0x000b94c47e4a8d7a70be12c50fc35722a7596972"
         self.assertFalse(self.tx_analyser.has_less_than_n_transactions(address, 10))
 
+    def test_count_transactions(self):
+        address = "0x000b94c47e4a8d7a70be12c50fc35722a7596972"
+        self.assertEquals(self.tx_analyser.count_transactions(address), 61)
+
     def test_has_less_than_n_transactions_True(self):
         address = "0xlcsad8bc3dfbe42d9a87686f67c69001a2006da4"
         self.assertTrue(self.tx_analyser.has_less_than_n_transactions(address, 50))
