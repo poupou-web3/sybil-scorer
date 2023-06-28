@@ -149,8 +149,7 @@ class TransactionAnalyser(object):
             Set the df_seed_wallet_naive attribute of the class
 
         """
-        if self.gb_EOA_sorted is None:
-            self.set_group_by_sorted_EOA()
+        self.set_group_by_sorted_EOA()
         self.df_seed_wallet_naive = self.gb_EOA_sorted.first().loc[:, ['from_address', 'to_address']]
 
     def set_seed_wallet(self):
@@ -247,6 +246,54 @@ class TransactionAnalyser(object):
             The array of contributors of the grant
         """
         return self.df_transactions['EOA'].unique()
+
+    @staticmethod
+    def get_interacted_address(from_address, to_address, address):
+        if from_address == address:
+            return to_address
+        else:
+            return from_address
+
+    def count_interaction_any(self, address, array_address):
+        """
+        Return an integer of the number of interactions with the addresses in the array_address
+        Parameters
+        ----------
+        address : str
+            The address to check
+        array_address : narray
+            The array of addresses to check
+
+        Returns
+        -------
+        count_interaction_with_any : int
+            The number of interactions with the addresses in the array_address
+        """
+
+        self.set_group_by_sorted_EOA()
+        df = self.gb_EOA_sorted.get_group(address)
+        address_interact = df.apply(lambda x: self.get_interacted_address(x['from_address'], x['to_address'], address),
+                                    axis=1)
+        tx_boolean_interacted = address_interact.isin(array_address)
+        return tx_boolean_interacted.sum()
+
+    def has_interacted_with_any(self, address, array_address):
+        """
+        Return a boolean whether the address has interacted with any address in the array_address
+        Parameters
+        ----------
+        address : str
+            The address to check
+        array_address : narray
+            The array of addresses to check
+
+        Returns
+        -------
+        has_interacted_with_any : bool
+            True if the address has interacted with one or more of the addresses in the array_address
+        """
+        count_interaction_with_any = self.count_interaction_with_any(address, array_address)
+        return count_interaction_with_any > 0
 
     def transaction_similitude_pylcs(self, address, algo_type="address_only", minimum_sim_tx=5):
         """
