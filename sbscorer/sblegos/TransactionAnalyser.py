@@ -41,6 +41,7 @@ class TransactionAnalyser(object):
         # for example to calculate on a specific project
 
         # store the array of string transactions
+        self.dict_add_interacted = None
         self.dict_add_string_tx = None
         self.dict_add_value_string_tx = None
 
@@ -213,6 +214,47 @@ class TransactionAnalyser(object):
         self.set_group_by_sorted_EOA()
         return self.gb_EOA_sorted.get_group(address).shape[0]
 
+    def set_dict_add_interacted(self):
+        """
+        Set the dict_add_interacted attribute of the class. It holds a dictionary of address as key and the list of
+        address interacted with as value.
+        Returns None
+        -------
+
+        """
+        if self.dict_add_interacted is None:
+            dict_add_interacted = {}
+            self.set_group_by_sorted_EOA()
+            contributors = self.get_contributors()
+            for address in contributors:
+                df = self.gb_EOA_sorted.get_group(address)
+                add_interacted = np.append(df['to_address'].to_numpy(), df['from_address'].to_numpy())
+                add_interacted = add_interacted.astype('str')
+                unique_add_interacted = np.unique(add_interacted)
+                unique_add_interacted = unique_add_interacted[unique_add_interacted != address]
+                dict_add_interacted[address] = unique_add_interacted
+            self.dict_add_interacted = dict_add_interacted
+
+    def count_interaction_with_other_contributor(self, address):
+        """
+        Return the number of interactions of the address with other contributor (not itself)
+        Parameters
+        ----------
+        address : str
+            The address to check
+
+        Returns
+        -------
+        count_interaction_with_other_contributor : int
+            The number of interactions of the address with other contributor (not itself)
+        """
+        self.set_dict_add_interacted()
+        contributors = self.get_contributors()
+        other_contributors = contributors[contributors != address]
+
+        unique_add_interacted = self.dict_add_interacted[address]
+        return np.isin(unique_add_interacted, other_contributors).sum()
+
     def has_interacted_with_other_contributor(self, address):
         """
         Return a boolean whether the address has interacted with other contributor (not itself)
@@ -226,16 +268,7 @@ class TransactionAnalyser(object):
         has_interacted_with_other_contributor : bool
             True if the address has interacted with one or more contributor of the grant
         """
-        self.set_group_by_sorted_EOA()
-        contributors = self.get_contributors()
-        other_contributors = contributors[contributors != address]
-
-        df = self.gb_EOA_sorted.get_group(address)
-        add_interacted = np.append(df['to_address'].to_numpy(), df['from_address'].to_numpy())
-        add_interacted = add_interacted.astype('str')
-        unique_add_interacted = np.unique(add_interacted)
-        unique_add_interacted = unique_add_interacted[unique_add_interacted != address]
-        return np.isin(unique_add_interacted, other_contributors).any()
+        return self.count_interaction_with_other_contributor(address) > 0
 
     def get_contributors(self):
         """
@@ -270,12 +303,8 @@ class TransactionAnalyser(object):
             The number of interactions with the addresses in the array_address
         """
 
-        self.set_group_by_sorted_EOA()
-        df = self.gb_EOA_sorted.get_group(address)
-        address_interact = df.apply(lambda x: self.get_interacted_address(x['from_address'], x['to_address'], address),
-                                    axis=1)
-        tx_boolean_interacted = address_interact.isin(array_address)
-        return tx_boolean_interacted.sum()
+        unique_add_interacted = self.dict_add_interacted[address]
+        return unique_add_interacted.isin(array_address).sum()
 
     def has_interacted_with_any(self, address, array_address):
         """
