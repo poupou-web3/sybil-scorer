@@ -42,6 +42,17 @@ class TransactionAnalyserTest(unittest.TestCase):
         address = "0x000b94c47e4a8d7a70be12c50fc35722a7596972"
         self.assertTrue(self.tx_analyser.has_suspicious_seed_behavior(address))
 
+    def test_set_details_in(self):
+        self.tx_analyser.set_details_first_incoming_transaction()
+        self.assertEqual(
+            self.tx_analyser.details_first_incoming_transaction.loc[2, 'first_in_tx_eth_value'], 0.19)
+
+    def test_set_details_out(self):
+        self.tx_analyser.set_details_first_outgoing_transaction()
+        self.assertEqual(
+            self.tx_analyser.details_first_outgoing_transaction.loc[2, 'first_out_tx_eth_value'],
+            0.011706)
+
     def test_has_less_than_n_transactions(self):
         address = "0x000b94c47e4a8d7a70be12c50fc35722a7596972"
         self.assertFalse(self.tx_analyser.has_less_than_n_transactions(address, 10))

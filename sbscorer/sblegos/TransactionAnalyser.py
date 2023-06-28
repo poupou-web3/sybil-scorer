@@ -37,6 +37,8 @@ class TransactionAnalyser(object):
         self.df_seed_wallet = None
         self.gb_EOA_sorted = None
         self.df_address = df_address
+        self.details_first_incoming_transaction = None
+        self.details_first_outgoing_transaction = None
         # We use a df address we can load all transactions in memory and then change the address list easily
         # for example to calculate on a specific project
 
@@ -180,6 +182,41 @@ class TransactionAnalyser(object):
         """
         if self.gb_EOA_sorted is None:
             self.gb_EOA_sorted = self.df_transactions.sort_values('block_timestamp', ascending=True).groupby('EOA')
+
+    def set_details_first_incoming_transaction(self):
+        """
+        Set the details_first_incoming_transaction attribute of the class. It holds the details of the first incoming
+        transaction of the address given in parameter
+        Parameters
+        ----------
+
+        Returns
+        -------
+        None
+            Set the details_first_incoming_transaction attribute of the class
+
+        """
+        df_filtered = self.df_transactions[self.df_transactions['EOA'] == self.df_transactions['to_address']]
+        df_gb = df_filtered.sort_values('block_timestamp', ascending=True).groupby('EOA').first()
+        cols = ['from_address', 'gas_limit', 'gas_used', 'eth_value', 'block_timestamp']
+        df_gb_first = df_gb.loc[:, cols].reset_index()
+        self.details_first_incoming_transaction = df_gb_first.rename(columns=dict(from_address='first_in_tx_from',
+                                                                                  gas_limit='first_in_tx_value',
+                                                                                  gas_used='first_in_tx_gas_used',
+                                                                                  eth_value='first_in_tx_eth_value',
+                                                                                  block_timestamp='first_in_tx_timestamp'))
+
+    def set_details_first_outgoing_transaction(self):
+
+        df_filtered = self.df_transactions[self.df_transactions['EOA'] == self.df_transactions['from_address']]
+        df_gb = df_filtered.sort_values('block_timestamp', ascending=True).groupby('EOA').first()
+        cols = ['to_address', 'gas_limit', 'gas_used', 'eth_value', 'block_timestamp']
+        df_gb_first = df_gb.loc[:, cols].reset_index()
+        self.details_first_outgoing_transaction = df_gb_first.rename(columns=dict(from_address='first_out_tx_from',
+                                                                                  gas_limit='first_out_tx_value',
+                                                                                  gas_used='first_out_tx_gas_used',
+                                                                                  eth_value='first_out_tx_eth_value',
+                                                                                  block_timestamp='first_out_tx_timestamp'))
 
     def has_less_than_n_transactions(self, address, n=5):
         """
