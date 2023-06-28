@@ -159,3 +159,4 @@ dmypy.json
 .pyre/
 /docs/source/_autosummary/
 
+/sbscorer/sblegos/TransactionAnalyserTest.py

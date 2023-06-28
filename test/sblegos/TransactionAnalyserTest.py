@@ -58,6 +58,10 @@ class TransactionAnalyserTest(unittest.TestCase):
         address = "0x000b94c47e4a8d7a70be12c50fc35722a7596972"
         self.assertFalse(self.tx_analyser.has_interacted_with_other_contributor(address))
 
+    def test_count_interacted_with_contributor(self):
+        address = "0xlcsad8bc3dfbe42d9a87686f67c69001a2006da4"
+        self.assertEqual(1, self.tx_analyser.count_interaction_with_other_contributor(address))
+
     def test_has_interacted_with_contributor_true(self):
         address = "0xlcsad8bc3dfbe42d9a87686f67c69001a2006da4"
         self.assertTrue(self.tx_analyser.has_interacted_with_other_contributor(address))
