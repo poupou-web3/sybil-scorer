@@ -286,7 +286,7 @@ class TransactionAnalyser(object):
         """
 
         unique_add_interacted = self.dict_add_interacted[address]
-        return unique_add_interacted.isin(array_address).sum()
+        return np.isin(unique_add_interacted, array_address).sum()
 
     def has_interacted_with_any(self, address, array_address):
         """
@@ -303,7 +303,7 @@ class TransactionAnalyser(object):
         has_interacted_with_any : bool
             True if the address has interacted with one or more of the addresses in the array_address
         """
-        count_interaction_with_any = self.count_interaction_with_any(address, array_address)
+        count_interaction_with_any = self.count_interaction_any(address, array_address)
         return count_interaction_with_any > 0
 
     def get_contributors(self):
