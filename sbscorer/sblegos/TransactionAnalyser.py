@@ -252,8 +252,7 @@ class TransactionAnalyser(object):
         contributors = self.get_contributors()
         other_contributors = contributors[contributors != address]
 
-        unique_add_interacted = self.dict_add_interacted[address]
-        return np.isin(unique_add_interacted, other_contributors).sum()
+        return self.count_interaction_any(address, other_contributors)
 
     def has_interacted_with_other_contributor(self, address):
         """
@@ -269,23 +268,6 @@ class TransactionAnalyser(object):
             True if the address has interacted with one or more contributor of the grant
         """
         return self.count_interaction_with_other_contributor(address) > 0
-
-    def get_contributors(self):
-        """
-        Return a list of contributors of the grant
-        Returns
-        -------
-        contributors : narray
-            The array of contributors of the grant
-        """
-        return self.df_transactions['EOA'].unique()
-
-    @staticmethod
-    def get_interacted_address(from_address, to_address, address):
-        if from_address == address:
-            return to_address
-        else:
-            return from_address
 
     def count_interaction_any(self, address, array_address):
         """
@@ -323,6 +305,16 @@ class TransactionAnalyser(object):
         """
         count_interaction_with_any = self.count_interaction_with_any(address, array_address)
         return count_interaction_with_any > 0
+
+    def get_contributors(self):
+        """
+        Return a list of contributors of the grant
+        Returns
+        -------
+        contributors : narray
+            The array of contributors of the grant
+        """
+        return self.df_transactions['EOA'].unique()
 
     def transaction_similitude_pylcs(self, address, algo_type="address_only", minimum_sim_tx=5):
         """
