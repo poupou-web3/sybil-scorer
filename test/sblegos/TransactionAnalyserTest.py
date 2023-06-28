@@ -104,6 +104,10 @@ class TransactionAnalyserTest(unittest.TestCase):
         tx_sim = tx_analyser_lcs.transaction_similitude_pylcs(address=address, algo_type="address_only")
         self.assertEqual(17, tx_sim.loc['0x000ad8bc3dfbe42d9a87686f67c69001a2006da4', 'lcs'])
 
+    def test_get_df_features(self):
+        df_features = self.tx_analyser.get_df_features()
+        self.assertEqual((8, 16), df_features.shape)
+
 
 if __name__ == '__main__':
     unittest.main()

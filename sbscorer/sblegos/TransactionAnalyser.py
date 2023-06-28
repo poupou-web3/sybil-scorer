@@ -201,7 +201,7 @@ class TransactionAnalyser(object):
         cols = ['from_address', 'gas_limit', 'gas_used', 'eth_value', 'block_timestamp']
         df_gb_first = df_gb.loc[:, cols].reset_index()
         self.details_first_incoming_transaction = df_gb_first.rename(columns=dict(from_address='first_in_tx_from',
-                                                                                  gas_limit='first_in_tx_value',
+                                                                                  gas_limit='first_in_tx_gas_limit',
                                                                                   gas_used='first_in_tx_gas_used',
                                                                                   eth_value='first_in_tx_eth_value',
                                                                                   block_timestamp='first_in_tx_timestamp'))
@@ -213,7 +213,7 @@ class TransactionAnalyser(object):
         cols = ['to_address', 'gas_limit', 'gas_used', 'eth_value', 'block_timestamp']
         df_gb_first = df_gb.loc[:, cols].reset_index()
         self.details_first_outgoing_transaction = df_gb_first.rename(columns=dict(from_address='first_out_tx_from',
-                                                                                  gas_limit='first_out_tx_value',
+                                                                                  gas_limit='first_out_tx_gas_limit',
                                                                                   gas_used='first_out_tx_gas_used',
                                                                                   eth_value='first_out_tx_eth_value',
                                                                                   block_timestamp='first_out_tx_timestamp'))
@@ -570,3 +570,21 @@ class TransactionAnalyser(object):
         # 1 similar transaction equals to 8 first char of the address + "-" + "x" = 10 char
         lcs = pylcs.lcs_string_length(string_target, string_other)
         return lcs // 10  # quotient of the division
+
+    def get_df_features(self):
+        self.set_group_by_sorted_EOA()
+        df_features = self.gb_EOA_sorted['tx_hash'].count().reset_index().rename(columns={'tx_hash': 'count_tx'})
+        df_features['same_seed'] = df_features['EOA'].apply(lambda x: self.has_same_seed(x))
+        df_features['same_seed_naive'] = df_features['EOA'].apply(lambda x: self.has_same_seed_naive(x))
+        df_features['seed_suspicious'] = df_features.loc[:, 'same_seed'].ne(df_features.loc[:, 'same_seed_naive'])
+        df_features['count_interact_other_ctbt'] = df_features['EOA'].apply(
+            lambda x: self.count_interaction_with_other_contributor(x))
+        self.set_details_first_incoming_transaction()
+        self.set_details_first_outgoing_transaction()
+        details_first_incoming_transaction = self.details_first_incoming_transaction
+        details_first_outgoing_transaction = self.details_first_outgoing_transaction
+
+        merge = df_features.merge(details_first_incoming_transaction, on='EOA', how='left')
+        merge = merge.merge(details_first_outgoing_transaction, on='EOA', how='left')
+
+        return merge
