@@ -31,21 +31,26 @@ class TransactionAnalyser(object):
         df_address : pd.DataFrame
             The dataframe containing a 'address' column 
         """
-        self.df_transactions = df_transactions
-        # holds a df of address/seed wallet we don't have to create it each time
+        
+        self.gb_EOA_sorted = None
         self.df_seed_wallet_naive = None
         self.df_seed_wallet = None
-        self.gb_EOA_sorted = None
-        self.df_address = df_address
         self.details_first_incoming_transaction = None
         self.details_first_outgoing_transaction = None
-        # We use a df address we can load all transactions in memory and then change the address list easily
-        # for example to calculate on a specific project
+        self.df_transactions = df_transactions
 
         # store the array of string transactions
         self.dict_add_interacted = None
         self.dict_add_string_tx = None
         self.dict_add_value_string_tx = None
+
+        # set objects
+        self.set_group_by_sorted_EOA()
+        self.set_seed_wallet_naive()
+        self.set_seed_wallet()
+        self.df_address = df_address
+        self.set_details_first_incoming_transaction()
+        self.set_details_first_outgoing_transaction()
 
     def has_same_seed_naive(self, address):
         """
@@ -152,7 +157,6 @@ class TransactionAnalyser(object):
             Set the df_seed_wallet_naive attribute of the class
 
         """
-        self.set_group_by_sorted_EOA()
         self.df_seed_wallet_naive = self.gb_EOA_sorted.first().loc[:, ['from_address', 'to_address']]
 
     def set_seed_wallet(self):
@@ -180,8 +184,7 @@ class TransactionAnalyser(object):
             Set the gb_EOA_sorted attribute of the class
 
         """
-        if self.gb_EOA_sorted is None:
-            self.gb_EOA_sorted = self.df_transactions.sort_values('block_timestamp', ascending=True).groupby('EOA')
+        self.gb_EOA_sorted = self.df_transactions.sort_values('block_timestamp', ascending=True).groupby('EOA')
 
     def set_details_first_incoming_transaction(self):
         """
@@ -248,7 +251,6 @@ class TransactionAnalyser(object):
         count_transactions : int
             The number of transactions of the address
         """
-        self.set_group_by_sorted_EOA()
         return self.gb_EOA_sorted.get_group(address).shape[0]
 
     def set_dict_add_interacted(self):
@@ -261,7 +263,6 @@ class TransactionAnalyser(object):
         """
         if self.dict_add_interacted is None:
             dict_add_interacted = {}
-            self.set_group_by_sorted_EOA()
             contributors = self.get_contributors()
             for address in contributors:
                 df = self.gb_EOA_sorted.get_group(address)
@@ -502,11 +503,7 @@ class TransactionAnalyser(object):
         try:
             df = self.gb_EOA_sorted.get_group(address)
         except Exception as e:
-            if self.gb_EOA_sorted is None:
-                self.set_group_by_sorted_EOA()
-                df = self.get_address_transactions(address)
-            else:
-                df = pd.DataFrame()
+            df = pd.DataFrame()
         return df
 
     def get_address_transactions_add(self, df, address):
@@ -586,7 +583,6 @@ class TransactionAnalyser(object):
             return lcs.reset_index()['score'].max()
 
     def get_df_features(self):
-        self.set_group_by_sorted_EOA()
         df_features = self.gb_EOA_sorted['tx_hash'].count().reset_index().rename(columns={'tx_hash': 'count_tx'})
         df_features['less_10_tx'] = df_features['count_tx'].apply(lambda x: x < 10)
         df_features['same_seed'] = df_features['EOA'].apply(lambda x: self.has_same_seed(x))
