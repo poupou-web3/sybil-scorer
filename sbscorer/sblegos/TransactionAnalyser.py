@@ -31,7 +31,10 @@ class TransactionAnalyser(object):
         df_address : pd.DataFrame
             The dataframe containing a 'address' column 
         """
-        
+        assert isinstance(df_transactions, pd.DataFrame), "The df_transactions should be a pd.DataFrame"
+        assert isinstance(df_address, pd.DataFrame), "The df_address should be a pd.DataFrame"
+        assert 'address' in df_address.columns, "The df_address should contain a column 'address'"
+
         self.gb_EOA_sorted = None
         self.df_seed_wallet_naive = None
         self.df_seed_wallet = None

@@ -99,7 +99,7 @@ class TransactionAnalyserTest(unittest.TestCase):
     def test_transaction_similitude_pylcs_column_name_true(self):
         address = "0xlcsad8bc3dfbe42d9a87686f67c69001a2006da4"  # copy of 0x000ad8bc3dfbe42d9a87686f67c69001a2006da4
         address_lcs = pd.read_csv(os.path.join(self.path_to_test_add, "tx_analyser_address_lcs.csv"))
-        address_lcs.columns = ['lcs']
+        address_lcs.columns = ['address']
         tx_analyser_lcs = TransactionAnalyser(self.df_tx, address_lcs)
         tx_sim = tx_analyser_lcs.transaction_similitude_pylcs(address=address, algo_type="address_only")
         self.assertEqual(17, tx_sim.loc['0x000ad8bc3dfbe42d9a87686f67c69001a2006da4', 'lcs'])
