@@ -571,9 +571,24 @@ class TransactionAnalyser(object):
         lcs = pylcs.lcs_string_length(string_target, string_other)
         return lcs // 10  # quotient of the division
 
+    @staticmethod
+    def get_mean_score_lcs(lcs):
+        if lcs.shape[0] == 0:
+            return 0
+        else:
+            return lcs.reset_index()['score'].mean()
+
+    @staticmethod
+    def get_max_score_lcs(lcs):
+        if lcs.shape[0] == 0:
+            return 0
+        else:
+            return lcs.reset_index()['score'].max()
+
     def get_df_features(self):
         self.set_group_by_sorted_EOA()
         df_features = self.gb_EOA_sorted['tx_hash'].count().reset_index().rename(columns={'tx_hash': 'count_tx'})
+        df_features['less_10_tx'] = df_features['count_tx'].apply(lambda x: x < 10)
         df_features['same_seed'] = df_features['EOA'].apply(lambda x: self.has_same_seed(x))
         df_features['same_seed_naive'] = df_features['EOA'].apply(lambda x: self.has_same_seed_naive(x))
         df_features['seed_suspicious'] = df_features.loc[:, 'same_seed'].ne(df_features.loc[:, 'same_seed_naive'])
@@ -583,6 +598,21 @@ class TransactionAnalyser(object):
         self.set_details_first_outgoing_transaction()
         details_first_incoming_transaction = self.details_first_incoming_transaction
         details_first_outgoing_transaction = self.details_first_outgoing_transaction
+
+        df_features['lcs'] = 0
+        df_bool_less_10_tx = df_features['less_10_tx'] == True
+        r = df_features.loc[df_bool_less_10_tx, 'EOA'].apply(
+            lambda x: self.transaction_similitude_pylcs(x, minimum_sim_tx=3))
+
+        df_features['cluster_size_lcs'] = 0
+        df_features['mean_score_lcs'] = 0
+        df_features['max_score_lcs'] = 0
+
+        df_features.loc[df_bool_less_10_tx, 'cluster_size_lcs'] = r.apply(lambda x: len(x))
+        df_features.loc[df_bool_less_10_tx, 'mean_score_lcs'] = r.apply(lambda x: self.get_mean_score_lcs(x))
+        df_features.loc[df_bool_less_10_tx, 'max_score_lcs'] = r.apply(lambda x: self.get_max_score_lcs(x))
+
+        df_features['has_lcs'] = df_features['cluster_size_lcs'] > 0
 
         merge = df_features.merge(details_first_incoming_transaction, on='EOA', how='left')
         merge = merge.merge(details_first_outgoing_transaction, on='EOA', how='left')
