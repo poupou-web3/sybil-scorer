@@ -17,7 +17,7 @@ class TransactionAnalyser(object):
     It has methods that allows to perform on chain analysis of an address.
     """
 
-    def __init__(self, df_transactions, df_address):
+    def __init__(self, df_transactions, array_address):
         """
         This class is used to analyse transactions of an address.
         It has methods that allows to perform on chain analysis of an address.
@@ -28,12 +28,11 @@ class TransactionAnalyser(object):
         ----------
         df_transactions : pd.DataFrame
             The dataframe containing all the transactions of the addresses
-        df_address : pd.DataFrame
+        array_address : np.ndarray
             The dataframe containing a 'address' column 
         """
         assert isinstance(df_transactions, pd.DataFrame), "The df_transactions should be a pd.DataFrame"
-        assert isinstance(df_address, pd.DataFrame), "The df_address should be a pd.DataFrame"
-        assert 'address' in df_address.columns, "The df_address should contain a column 'address'"
+        assert isinstance(array_address, np.ndarray), "The df_address should be a numpy array"
 
         self.gb_EOA_sorted = None
         self.df_seed_wallet_naive = None
@@ -51,7 +50,7 @@ class TransactionAnalyser(object):
         self.set_group_by_sorted_EOA()
         self.set_seed_wallet_naive()
         self.set_seed_wallet()
-        self.df_address = df_address
+        self.array_address = array_address
         self.set_details_first_incoming_transaction()
         self.set_details_first_outgoing_transaction()
 
@@ -413,10 +412,8 @@ class TransactionAnalyser(object):
         min_shape = max(1, shape_target / 4)
         max_shape = max(shape_target, shape_target * 3)
 
-        if self.df_address.columns != ['address']:
-            self.df_address.columns = ['address']
         list_lcs = []
-        for add in self.df_address['address']:
+        for add in self.array_address:
             if add != address:
                 shape_other = self.get_address_transactions(add).shape[0]
                 if min_shape < shape_other < max_shape:  # Heuristic to avoid comparing addresses with too different shapes
@@ -435,7 +432,7 @@ class TransactionAnalyser(object):
             mask = np.array(list_lcs) > max(3, min(10, shape_target / 4))
         else:
             mask = np.array(list_lcs) > minimum_sim_tx
-        df_similar_address = self.df_address.loc[mask, :].copy()
+        df_similar_address = pd.DataFrame(self.array_address[mask], columns=['address'])
         df_similar_address['lcs'] = np.array(list_lcs)[mask]
         len_tx = len(str_transactions_target) / 2  # Divide by 2 because we have from_address and to_address
         df_similar_address['score'] = df_similar_address.loc[:, 'lcs'].apply(
