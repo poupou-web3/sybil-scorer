@@ -619,7 +619,7 @@ class TransactionAnalyser(object):
 
     def get_df_features_vectorized(self):
         df_features = self.gb_EOA_sorted['tx_hash'].count().reset_index().rename(columns={'tx_hash': 'count_tx'})
-        df_features['less_10_tx'] = np.vectorize(lambda x: x < 10)(df_features['count_tx'])
+        df_features['less_10_tx'] = True  # np.vectorize(lambda x: x < 10)(df_features['count_tx'])
         df_features['same_seed'] = np.vectorize(self.has_same_seed)(df_features['EOA'])
         df_features['same_seed_naive'] = np.vectorize(self.has_same_seed_naive)(df_features['EOA'])
         df_features['seed_suspicious'] = df_features.loc[:, 'same_seed'].ne(df_features.loc[:, 'same_seed_naive'])
@@ -636,7 +636,8 @@ class TransactionAnalyser(object):
 
         df_bool_less_10_tx = df_features['less_10_tx']
         if df_bool_less_10_tx.sum() > 0:
-            r = np.vectorize(self.transaction_similitude_pylcs)(df_features.loc[df_bool_less_10_tx, 'EOA'])
+            r = df_features.loc[df_bool_less_10_tx, 'EOA'].apply(
+                lambda x: self.transaction_similitude_pylcs(x, minimum_sim_tx=3))
             df_features.loc[df_bool_less_10_tx, 'cluster_size_lcs'] = np.vectorize(len)(r)
             df_features.loc[df_bool_less_10_tx, 'mean_score_lcs'] = np.vectorize(self.get_mean_score_lcs)(r)
             df_features.loc[df_bool_less_10_tx, 'max_score_lcs'] = np.vectorize(self.get_max_score_lcs)(r)
