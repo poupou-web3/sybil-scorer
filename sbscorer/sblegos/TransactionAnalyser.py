@@ -29,7 +29,7 @@ class TransactionAnalyser(object):
         df_transactions : pd.DataFrame
             The dataframe containing all the transactions of the addresses
         array_address : np.ndarray
-            The dataframe containing a 'address' column 
+            The ndarray containing a list of addresses
         """
         assert isinstance(df_transactions, pd.DataFrame), "The df_transactions should be a pd.DataFrame"
         assert isinstance(array_address, np.ndarray), "The df_address should be a numpy array"
@@ -39,7 +39,8 @@ class TransactionAnalyser(object):
         self.df_seed_wallet = None
         self.details_first_incoming_transaction = None
         self.details_first_outgoing_transaction = None
-        self.df_transactions = df_transactions
+        self.array_address = np.intersect1d(array_address, df_transactions.EOA.unique())
+        self.df_transactions = df_transactions[df_transactions['EOA'].isin(array_address)]
 
         # store the array of string transactions
         self.dict_add_interacted = None
@@ -50,7 +51,6 @@ class TransactionAnalyser(object):
         self.set_group_by_sorted_EOA()
         self.set_seed_wallet_naive()
         self.set_seed_wallet()
-        self.array_address = array_address
         self.set_details_first_incoming_transaction()
         self.set_details_first_outgoing_transaction()
 
