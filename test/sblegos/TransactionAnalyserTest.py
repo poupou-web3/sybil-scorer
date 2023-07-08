@@ -15,7 +15,7 @@ class TransactionAnalyserTest(unittest.TestCase):
 
     df_address = pd.read_csv(os.path.join(path_to_test_add, "tx_analyser_address.csv"))
     df_tx = dataLoader.create_df_tx("ethereum")
-    tx_analyser = TransactionAnalyser(df_tx, df_address.address.values)
+    tx_analyser = TransactionAnalyser(df_tx, df_tx.EOA.unique())
 
     def test_has_same_seed_naive(self):
         address = "0x000bec82c41837d974899b26b26f9cc8890af9ea"

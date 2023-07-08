@@ -39,7 +39,7 @@ class TransactionAnalyser(object):
         self.df_seed_wallet = None
         self.details_first_incoming_transaction = None
         self.details_first_outgoing_transaction = None
-        self.array_address = np.intersect1d(array_address, df_transactions.EOA.unique())
+        self.array_address = np.intersect1d(array_address, df_transactions['EOA'].unique())
         self.df_transactions = df_transactions[df_transactions['EOA'].isin(array_address)]
 
         # store the array of string transactions
