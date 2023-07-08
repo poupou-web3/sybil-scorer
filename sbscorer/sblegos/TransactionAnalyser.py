@@ -58,8 +58,9 @@ class TransactionAnalyser(object):
         """
         Return if the address has the same seed wallet as one of the seed wallet of the df_transactions
 
-        If the df_seed_wallet is not set, it will set it
-        Note df_transaction could contain transactions from multiple network but the seed wallet of the address is
+        Note
+        1. You should consider using count_same_seed_naive and applying a vectorized operation.
+        2. df_transaction could contain transactions from multiple network but the seed wallet of the address is
         filtered which prevent unexpected raise of the boolean.
 
         Parameters
@@ -73,10 +74,29 @@ class TransactionAnalyser(object):
             True if the address has the same seed wallet as one of the seed wallet of the df_transactions
         """
 
-        if self.df_seed_wallet_naive is None:
-            self.set_seed_wallet_naive()
+        return self.count_same_seed_naive(address) > 0
+
+    def count_same_seed_naive(self, address):
+        """
+        Return if the address has the same seed wallet as one of the seed wallet of the df_transactions
+
+        If the df_seed_wallet is not set, it will set it
+        Note df_transaction could contain transactions from multiple network but the seed wallet of the address is
+        filtered which prevent unexpected raise of the boolean.
+
+        Parameters
+        ----------
+        address : str
+            The address to check
+
+        Returns
+        -------
+        count_same_seed : int
+            The number of addresses having the same seed wallet
+        """
+
         df_same_seed = self.get_address_same_seed(self.df_seed_wallet_naive, address)
-        return df_same_seed.shape[0] > 0
+        return df_same_seed.shape[0]
 
     def has_same_seed(self, address):
         """
@@ -86,8 +106,8 @@ class TransactionAnalyser(object):
         It is possible to interact with a smart contract even before receiving any fund.
         This algorithm takes that into account.
 
-        If the df_seed_wallet is not set, it will set it
-        Note df_transaction could contain transactions from multiple network but the seed wallet of the address is
+        1. You should consider using count_same_seed_naive and applying a vectorized operation.
+        2. df_transaction could contain transactions from multiple network but the seed wallet of the address is
         filtered which prevent unexpected raise of the boolean.
 
         Parameters
@@ -101,13 +121,33 @@ class TransactionAnalyser(object):
             True if the address has the same seed wallet as one of the seed wallet of the df_transactions
         """
 
-        if self.df_seed_wallet is None:
-            self.set_seed_wallet()
-        if address in self.df_seed_wallet.to_address.values:
+        return self.count_same_seed(address)
+
+    def count_same_seed(self, address):
+        """
+        Return the number of address having the same seed wallet as one of the seed wallet of the df_transactions
+        using a non-naive algorithm.
+        For some address the first transaction is not the incoming funding transaction.
+        It is possible to interact with a smart contract even before receiving any fund.
+        This algorithm takes that into account. Note that it does not retrieve the true funder through the internal
+        transaction but the first incoming transaction.
+
+        Parameters
+        ----------
+        address : str
+            The address to check
+
+        Returns
+        -------
+        count_same_seed : int
+            The number of addresses having the same seed wallet as one of the seed wallet of the df_transactions
+        """
+
+        if address in self.df_seed_wallet.to_address.values:  # check that there normal incoming transactions
             df_same_seed = self.get_address_same_seed(self.df_seed_wallet, address)
-            return df_same_seed.shape[0] > 0
+            return df_same_seed.shape[0]
         else:
-            return False
+            return 0
 
     @staticmethod
     def get_address_same_seed(df, address):
@@ -582,11 +622,18 @@ class TransactionAnalyser(object):
         else:
             return lcs.reset_index()['score'].max()
 
+    def get_df_seeder_count(self):
+        return self.df_seed_wallet.groupby('from_address').count().sort_values(by='to_address',
+                                                                               ascending=False).reset_index().drop(
+            columns=['to_address']).rename(columns={'from_address': 'seeder', 'EOA': 'count_seed'})
+
     def get_df_features(self):
         df_features = self.gb_EOA_sorted['tx_hash'].count().reset_index().rename(columns={'tx_hash': 'count_tx'})
-        df_features['less_10_tx'] = df_features['count_tx'].apply(lambda x: x < 10)
-        df_features['same_seed'] = df_features['EOA'].apply(lambda x: self.has_same_seed(x))
-        df_features['same_seed_naive'] = df_features['EOA'].apply(lambda x: self.has_same_seed_naive(x))
+        df_features['less_10_tx'] = df_features['count_tx'] <= 10
+        df_features['count_same_seed'] = df_features['EOA'].apply(lambda x: self.count_same_seed(x))
+        df_features['count_same_seed_naive'] = df_features['EOA'].apply(lambda x: self.count_same_seed_naive(x))
+        df_features['same_seed'] = df_features['count_same_seed'] > 0
+        df_features['same_seed_naive'] = df_features['count_same_seed_naive'] > 0
         df_features['seed_suspicious'] = df_features.loc[:, 'same_seed'].ne(df_features.loc[:, 'same_seed_naive'])
         df_features['count_interact_other_ctbt'] = df_features['EOA'].apply(
             lambda x: self.count_interaction_with_other_contributor(x))
@@ -616,10 +663,14 @@ class TransactionAnalyser(object):
 
     def get_df_features_vectorized(self):
         df_features = self.gb_EOA_sorted['tx_hash'].count().reset_index().rename(columns={'tx_hash': 'count_tx'})
-        df_features['less_10_tx'] = True  # np.vectorize(lambda x: x < 10)(df_features['count_tx'])
-        df_features['same_seed'] = np.vectorize(self.has_same_seed)(df_features['EOA'])
-        df_features['same_seed_naive'] = np.vectorize(self.has_same_seed_naive)(df_features['EOA'])
+        df_features['less_10_tx'] = df_features['count_tx'] <= 10
+
+        df_features['count_same_seed'] = np.vectorize(self.count_same_seed)(df_features['EOA'])
+        df_features['count_same_seed_naive'] = np.vectorize(self.count_same_seed_naive)(df_features['EOA'])
+        df_features['same_seed'] = df_features['count_same_seed'] > 0
+        df_features['same_seed_naive'] = df_features['count_same_seed_naive'] > 0
         df_features['seed_suspicious'] = df_features.loc[:, 'same_seed'].ne(df_features.loc[:, 'same_seed_naive'])
+
         df_features['count_interact_other_ctbt'] = np.vectorize(self.count_interaction_with_other_contributor)(
             df_features['EOA'])
 

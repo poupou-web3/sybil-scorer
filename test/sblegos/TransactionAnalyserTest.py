@@ -105,11 +105,11 @@ class TransactionAnalyserTest(unittest.TestCase):
 
     def test_get_df_features(self):
         df_features = self.tx_analyser.get_df_features()
-        self.assertEqual((8, 22), df_features.shape)
+        self.assertEqual((8, 24), df_features.shape)
 
     def test_get_df_features_vectorized(self):
         df_features = self.tx_analyser.get_df_features_vectorized()
-        self.assertEqual((8, 22), df_features.shape)
+        self.assertEqual((8, 24), df_features.shape)
 
 
 if __name__ == '__main__':
