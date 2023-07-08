@@ -147,6 +147,36 @@ class FlipsideApi(object):
         for network in list_network:
             self.extract_transactions_net(extract_dir, array_address, network)
 
+    def extract_data_flipside(self, array_address, sql_template):
+
+        q, r = divmod(len(array_address), self.MAX_ADDRESS)
+        if r != 0:
+            q += 1
+        list_df = []
+        for i in range(q):
+            start_index = i * self.MAX_ADDRESS
+            end_index = (i + 1) * self.MAX_ADDRESS
+            print(
+                f"Extracting for address: {start_index} - {end_index}")
+            array_address_slice = array_address[start_index:end_index]
+            str_address_slice = self.get_string_address(array_address_slice)
+            sql = sql_template % (str_address_slice, str_address_slice)
+            df = self.execute_query(sql=sql)
+
+            if df.shape[0] == 0 or df.shape == self.MAX_ROWS:  # retry with smaller query timeout or max rows
+                self.extract_data_flipside_rec(array_address, sql_template, start_index, end_index)
+            else:
+                list_df.append(df)
+        df = pd.concat(list_df)
+        return df
+
+    def extract_data_flipside_rec(self, array_address, sql_template, start_index, end_index):
+        end_first_slice = (start_index + end_index) // 2
+        print("Retrying with smaller query")
+        list_df = [self.extract_data_flipside(array_address[:end_first_slice], sql_template),
+                   self.extract_data_flipside(array_address[end_first_slice:], sql_template)]
+        return pd.concat(list_df)
+
     def extract_transactions_net(self, extract_dir, array_address, network):
         """
         Extract the transactions contained in array_address for the network and save them to csv in the extract_dir
