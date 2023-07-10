@@ -245,11 +245,12 @@ class TransactionAnalyser(object):
         df_gb = df_filtered.sort_values('block_timestamp', ascending=True).groupby('EOA').first()
         cols = ['from_address', 'gas_limit', 'gas_used', 'eth_value', 'block_timestamp']
         df_gb_first = df_gb.loc[:, cols].reset_index()
-        self.details_first_incoming_transaction = df_gb_first.rename(columns=dict(from_address='first_in_tx_from',
-                                                                                  gas_limit='first_in_tx_gas_limit',
-                                                                                  gas_used='first_in_tx_gas_used',
-                                                                                  eth_value='first_in_tx_eth_value',
-                                                                                  block_timestamp='first_in_tx_timestamp'))
+        self.details_first_incoming_transaction = df_gb_first.rename(
+            columns=dict(from_address='first_in_tx_from',
+                         gas_limit='first_in_tx_gas_limit',
+                         gas_used='first_in_tx_gas_used',
+                         eth_value='first_in_tx_eth_value',
+                         block_timestamp='first_in_tx_timestamp'))
 
     def set_details_first_outgoing_transaction(self):
 
@@ -257,11 +258,12 @@ class TransactionAnalyser(object):
         df_gb = df_filtered.sort_values('block_timestamp', ascending=True).groupby('EOA').first()
         cols = ['to_address', 'gas_limit', 'gas_used', 'eth_value', 'block_timestamp']
         df_gb_first = df_gb.loc[:, cols].reset_index()
-        self.details_first_outgoing_transaction = df_gb_first.rename(columns=dict(from_address='first_out_tx_from',
-                                                                                  gas_limit='first_out_tx_gas_limit',
-                                                                                  gas_used='first_out_tx_gas_used',
-                                                                                  eth_value='first_out_tx_eth_value',
-                                                                                  block_timestamp='first_out_tx_timestamp'))
+        self.details_first_outgoing_transaction = df_gb_first.rename(
+            columns=dict(from_address='first_out_tx_from',
+                         gas_limit='first_out_tx_gas_limit',
+                         gas_used='first_out_tx_gas_used',
+                         eth_value='first_out_tx_eth_value',
+                         block_timestamp='first_out_tx_timestamp'))
 
     def has_less_than_n_transactions(self, address, n=5):
         """
@@ -420,9 +422,9 @@ class TransactionAnalyser(object):
             options are: address_only, address_and_value
         minimum_sim_tx : int
             The number of transactions to use to compare. Default is 5.
-        char_tolerance : int
-            The number of character to skip when using the longest common substring algorithm. Default is 0.
-            1 may be a good choice when algo_type is "address_and_value".
+        # char_tolerance : int
+        #     The number of character to skip when using the longest common substring algorithm. Default is 0.
+        #     1 may be a good choice when algo_type is "address_and_value".
 
         Returns
         -------
@@ -435,6 +437,7 @@ class TransactionAnalyser(object):
 
         """
 
+        str_transactions_target = None
         # Transform all transactions into a 1D string
         if algo_type == "address_only":
             if self.dict_add_string_tx is None:
@@ -449,14 +452,14 @@ class TransactionAnalyser(object):
             Exception("algo_type not supported")
 
         shape_target = self.get_address_transactions(address).shape[0]
-        min_shape = max(1, shape_target / 4)
+        min_shape = max(1, int(shape_target / 4))
         max_shape = max(shape_target, shape_target * 3)
 
         list_lcs = []
         for add in self.array_address:
             if add != address:
                 shape_other = self.get_address_transactions(add).shape[0]
-                if min_shape < shape_other < max_shape:  # Heuristic to avoid comparing addresses with too different shapes
+                if min_shape < shape_other < max_shape:  # Heuristic prevent comparing addresses with different shapes
                     if algo_type == "address_only":
                         str_transactions_other = self.dict_add_string_tx.get(add)
                     else:
@@ -469,7 +472,7 @@ class TransactionAnalyser(object):
                 list_lcs.append(0)
 
         if minimum_sim_tx == -1:
-            mask = np.array(list_lcs) > max(3, min(10, shape_target / 4))
+            mask = np.array(list_lcs) > max(3, min(10, int(shape_target / 4)))
         else:
             mask = np.array(list_lcs) > minimum_sim_tx
         df_similar_address = pd.DataFrame(self.array_address[mask], columns=['address'])
@@ -513,6 +516,7 @@ class TransactionAnalyser(object):
                     .values
             except Exception as e:
                 array_transactions = []
+                print(e)
         elif algo_type == "address_and_value":
             try:
                 array_transactions = df_address_transactions.loc[:, ['from_address', 'value', 'to_address']].dropna() \
@@ -522,6 +526,7 @@ class TransactionAnalyser(object):
                     .values
             except Exception as e:
                 array_transactions = []
+                print(e)
         else:
             raise ValueError("algo_type must be either address_only or address_and_value")
         return array_transactions
@@ -544,6 +549,7 @@ class TransactionAnalyser(object):
             df = self.gb_EOA_sorted.get_group(address)
         except Exception as e:
             df = pd.DataFrame()
+            print(e)
         return df
 
     def get_address_transactions_add(self, df, address):

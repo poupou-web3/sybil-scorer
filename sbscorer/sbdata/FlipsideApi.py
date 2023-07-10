@@ -54,7 +54,7 @@ class FlipsideApi(object):
         # return results of page 1
         self.PAGE_NUMBER = page_number
         # max address to query.
-        # It is not recommended to go above 10000 it already takes a long time and it depends on the network
+        # It is not recommended to go above 10000 it already takes a long time, and it depends on the network
         # You will probably have to run more queries because either the query times out or the max rows is reached
         # At 100 tx per address the 1 million rows is reached if you use max_address=10000
         # At 1000 tx per address the 1 million rows is reached if you use max_address=1000
@@ -590,7 +590,7 @@ class FlipsideApi(object):
     def get_cross_chain_info_sql_query(self, array_address, info_type="label", limit=0):
         """
         Get the sql query to extract the cross chain labels or tags for the array of addresses.
-        WARNING you should not provide to much addresses in the array_address parameter because the query may time out.
+        WARNING you should not provide too many addresses in the array_address parameter because the query may time out.
         Parameters
         ----------
         array_address : array
@@ -613,6 +613,7 @@ class FlipsideApi(object):
             table_name = "crosschain.address_tags"
         else:
             Exception("Invalid info type")
+            table_name = ""
         if limit != 0:
             string_limit = f"LIMIT {limit}"
         else:

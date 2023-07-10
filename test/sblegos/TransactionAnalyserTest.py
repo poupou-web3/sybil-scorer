@@ -38,7 +38,7 @@ class TransactionAnalyserTest(unittest.TestCase):
         address = "0x000b94c47e4a8d7a70be12c50fc35722a7596972"
         self.assertTrue(self.tx_analyser.has_same_seed(address))
 
-    def test_has_same_seed_True(self):
+    def test_has_suspicious_seed_True(self):
         address = "0x000b94c47e4a8d7a70be12c50fc35722a7596972"
         self.assertTrue(self.tx_analyser.has_suspicious_seed_behavior(address))
 
