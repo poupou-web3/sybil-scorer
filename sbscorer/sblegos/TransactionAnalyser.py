@@ -645,10 +645,11 @@ class TransactionAnalyser(object):
                             'details_first_outgoing_transaction']
                             if 'all' is passed, the lcs feature is added
 
-        Returns : pd.DataFrame
+        Returns
+        -------
+        df_features : pd.DataFrame
             The data frame with the features
             index : EOA all unique addresses in the df_transactions
-        -------
 
         """
 
@@ -701,12 +702,11 @@ class TransactionAnalyser(object):
         if 'details_first_incoming_transaction' in list_features:
             details_first_incoming_transaction = self.details_first_incoming_transaction
             merge = df_features.merge(details_first_incoming_transaction, on='EOA', how='left')
+        else:
+            merge = df_features
 
         if 'details_first_outgoing_transaction' in list_features:
             details_first_outgoing_transaction = self.details_first_outgoing_transaction
             merge = merge.merge(details_first_outgoing_transaction, on='EOA', how='left')
-
-        if 'details_first_incoming_transaction' not in list_features and 'details_first_outgoing_transaction' not in list_features:
-            merge = df_features
 
         return merge
