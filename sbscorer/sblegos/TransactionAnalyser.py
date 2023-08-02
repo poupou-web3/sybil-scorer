@@ -633,36 +633,77 @@ class TransactionAnalyser(object):
                                                                                ascending=False).reset_index().drop(
             columns=['to_address']).rename(columns={'from_address': 'seeder', 'EOA': 'count_seed'})
 
-    def get_df_features(self):
-        df_features = self.gb_EOA_sorted['tx_hash'].count().reset_index().rename(columns={'tx_hash': 'count_tx'})
-        df_features['less_10_tx'] = df_features['count_tx'] <= 10
-        df_features['count_same_seed'] = df_features['EOA'].apply(lambda x: self.count_same_seed(x))
-        df_features['count_same_seed_naive'] = df_features['EOA'].apply(lambda x: self.count_same_seed_naive(x))
-        df_features['same_seed'] = df_features['count_same_seed'] > 0
-        df_features['same_seed_naive'] = df_features['count_same_seed_naive'] > 0
-        df_features['seed_suspicious'] = df_features.loc[:, 'same_seed'].ne(df_features.loc[:, 'same_seed_naive'])
-        df_features['count_interact_other_ctbt'] = df_features['EOA'].apply(
-            lambda x: self.count_interaction_with_other_contributor(x))
+    def get_df_features(self, list_features=None):
+        """
+        Get the features of the transaction dataset
+        Parameters
+        ----------
+        list_features : list
+            The list of features to retrieve, if None, the default features are retrieved : ['count_tx', 'less_10_tx',
+                            'count_same_seed', 'count_same_seed_naive','same_seed', 'same_seed_naive',
+                            'seed_suspicious', 'count_interact_other_ctbt','details_first_incoming_transaction',
+                            'details_first_outgoing_transaction']
+                            if 'all' is passed, the lcs feature is added
 
-        details_first_incoming_transaction = self.details_first_incoming_transaction
-        details_first_outgoing_transaction = self.details_first_outgoing_transaction
+        Returns : pd.DataFrame
+            The data frame with the features
+            index : EOA all unique addresses in the df_transactions
+        -------
 
-        df_features['lcs'] = 0
-        df_features['cluster_size_lcs'] = 0
-        df_features['mean_score_lcs'] = 0
-        df_features['max_score_lcs'] = 0
-        df_bool_less_10_tx = df_features['less_10_tx']
+        """
 
-        if df_bool_less_10_tx.sum() > 0:
-            r = df_features.loc[df_bool_less_10_tx, 'EOA'].apply(
-                lambda x: self.transaction_similitude_pylcs(x, minimum_sim_tx=3))
-            df_features.loc[df_bool_less_10_tx, 'cluster_size_lcs'] = r.apply(lambda x: len(x))
-            df_features.loc[df_bool_less_10_tx, 'mean_score_lcs'] = r.apply(lambda x: self.get_mean_score_lcs(x))
-            df_features.loc[df_bool_less_10_tx, 'max_score_lcs'] = r.apply(lambda x: self.get_max_score_lcs(x))
+        default_features = ['count_tx', 'less_10_tx', 'count_same_seed', 'count_same_seed_naive',
+                            'same_seed', 'same_seed_naive', 'seed_suspicious', 'count_interact_other_ctbt',
+                            'details_first_incoming_transaction', 'details_first_outgoing_transaction']
+        if list_features is None:
+            list_features = default_features
+        elif list_features == 'all':
+            list_features = default_features + ['lcs']
 
-        df_features['has_lcs'] = df_features['cluster_size_lcs'] > 0
+        if 'count_tx' in list_features:
+            df_features = self.gb_EOA_sorted['tx_hash'].count().reset_index().rename(columns={'tx_hash': 'count_tx'})
+        else:
+            df_features = pd.DataFrame(self.df_transactions['EOA'].unique(), columns=['EOA'])
 
-        merge = df_features.merge(details_first_incoming_transaction, on='EOA', how='left')
-        merge = merge.merge(details_first_outgoing_transaction, on='EOA', how='left')
+        if 'less_10_tx' in list_features:
+            df_features['less_10_tx'] = df_features['count_tx'] <= 10
+        if 'count_same_seed' in list_features:
+            df_features['count_same_seed'] = df_features['EOA'].apply(lambda x: self.count_same_seed(x))
+        if 'count_same_seed_naive' in list_features:
+            df_features['count_same_seed_naive'] = df_features['EOA'].apply(lambda x: self.count_same_seed_naive(x))
+        if 'same_seed' in list_features:
+            df_features['same_seed'] = df_features['count_same_seed'] > 0
+        if 'same_seed_naive' in list_features:
+            df_features['same_seed_naive'] = df_features['count_same_seed_naive'] > 0
+        if 'seed_suspicious' in list_features:
+            df_features['seed_suspicious'] = df_features.loc[:, 'same_seed'].ne(df_features.loc[:, 'same_seed_naive'])
+        if 'count_interact_other_ctbt' in list_features:
+            df_features['count_interact_other_ctbt'] = df_features['EOA'].apply(
+                lambda x: self.count_interaction_with_other_contributor(x))
+
+        if 'lcs' in list_features:
+
+            df_features['lcs'] = 0
+            df_features['cluster_size_lcs'] = 0
+            df_features['mean_score_lcs'] = 0
+            df_features['max_score_lcs'] = 0
+            df_bool_less_10_tx = df_features['less_10_tx']
+
+            if df_bool_less_10_tx.sum() > 0:
+                r = df_features.loc[df_bool_less_10_tx, 'EOA'].apply(
+                    lambda x: self.transaction_similitude_pylcs(x, minimum_sim_tx=3))
+                df_features.loc[df_bool_less_10_tx, 'cluster_size_lcs'] = r.apply(lambda x: len(x))
+                df_features.loc[df_bool_less_10_tx, 'mean_score_lcs'] = r.apply(lambda x: self.get_mean_score_lcs(x))
+                df_features.loc[df_bool_less_10_tx, 'max_score_lcs'] = r.apply(lambda x: self.get_max_score_lcs(x))
+
+            df_features['has_lcs'] = df_features['cluster_size_lcs'] > 0
+
+        if 'details_first_incoming_transaction' in list_features:
+            details_first_incoming_transaction = self.details_first_incoming_transaction
+            merge = df_features.merge(details_first_incoming_transaction, on='EOA', how='left')
+
+        if 'details_first_outgoing_transaction' in list_features:
+            details_first_outgoing_transaction = self.details_first_outgoing_transaction
+            merge = merge.merge(details_first_outgoing_transaction, on='EOA', how='left')
 
         return merge
