@@ -4,14 +4,14 @@ Sybil scorer is a python package that provides useful classes and methods to ana
 
 ## Installation
 
-- Python 3.10
+- Python >= 3.9
 - ```pip install sybil-scorer```
 
 ## What is inside?
 
 The package has two main sub-packages.
 
-- **sbdata** is a package to easily retrieve a large amount of data from the flipside API.
+- **sbdata** is a package to easily retrieve a large amount of data from the Flipside API.
 - **sblegos** a package to perform on-chain transactions analysis to detect potential Sybil behavior.
 - **sbutils** is a package that makes it easy to load the data extracted with sbdata and use it in sblegos.
 
@@ -39,6 +39,8 @@ It walks you through the process of retrieving data from the flipside API and sa
 To use this package you will need an API key from flipside that you can get
 here: https://sdk.flipsidecrypto.xyz/shroomdk/apikeys
 
+Useful example script are provided in the script folder.
+
 ### sblegos and sbutils
 
 sblegos provides the following analysis of legos:
@@ -62,35 +64,36 @@ The following snippet of code will check if any address has the same seed as any
 
 ``` python
 import os
-import sys
 from pathlib import Path
 import numpy as np
 import pandas as pd
-from legos import TransactionAnalyser
-from utils import LoadData
+from sbutils import LoadData
+from sblegos.TransactionAnalyser import TransactionAnalyser as txa
 
-current_dir = Path(os.getcwd())
+# Set path to data folder
+PATH_TO_EXPORT = 'path to where the data was extracted'
+CHAIN = 'the name of the chain you want to analyse for example "ethereum"'
 
-# Load the addresses we want to study here all contributors to the climate grant
-path_to_grants = "data/grants"
-path_to_contributor_address = os.path.join(path_to_grants, "address")
-full_path_add = os.path.join(current_dir, path_to_contributor_address)
-df_address = pd.read_csv(os.path.join(full_path_add, "df_contribution_address_CLIMATE.csv"))
-list_address = df_address["address"].tolist()
+# Load the votes data
+array_unique_address = df_votes['voter'].unique() # array of unique voters, here df_votes contains all the votes made on a grant 
 
-# Load the transactions of the addresses
-path_to_parent = Path(current_dir).parent
-path_to_tx = os.path.join(path_to_parent, 'transactions_full')
-data_loader = LoadData.LoadData(path_to_tx)
+# Be sure that the address are in lower case
+array_unique_address = np.char.lower(array_unique_address.astype(str))
+print(f'Number of unique voter: {len(array_unique_address)}')
 
-# Load the transactions of the addresses in a dataframe
-df_tx = data_loader.create_df_tx('ethereum', list_address)
+# Load the transactions of the addresses using the sbutils package
+data_loader = LoadData.LoadData(PATH_TO_EXPORT)
+df_tx = data_loader.create_df_tx(CHAIN, array_unique_address)
 
 # Initialise the TransactionAnalyser class
-tx_analyser = TransactionAnalyser.TransactionAnalyser(df_tx, df_address=df_address)
-df_matching_address = pd.DataFrame(df_tx.EOA.unique(), columns=["address"])
+tx_analyser = txa(df_tx, array_address=array_unique_address)
 
-# Check if the address has the same seed as any address in the grant returns a df with a boolean column 'seed_same_naive'
+# Compute some predetermined features, it can takes some time especially on large datasets
+df_matching_address = tx_analyser.get_df_features()
+df_matching_address.head(2)
+
+# For individual computation of the features:
+df_matching_address = pd.DataFrame(array_unique_address, columns=["address"])
 df_matching_address['seed_same_naive'] = df_matching_address.loc[:, 'address'].apply(lambda x : tx_analyser.has_same_seed_naive(x))
 
 ```
@@ -110,78 +113,26 @@ Then open the file docs/build/html/index.html in your browser.
 The local version of the documentation is prettier than the one hosted on readthedocs.
 ![doc.png](img/doc.png)
 
-## Additional Data
+## Example Data
 
 Some data for easier use of the package in the context of Gitcoin grants are made available on Ocean market.
 
-### Ethereum Transaction Data
+### Gitcoin Citizen Round data
 
-Ethereum Transaction data are available for download on Ocean here:
-https://market.oceanprotocol.com/asset/did:op:826780ac16a444d65a0699e0e7629e67688c7b6a31ba2d1e672e3a2b398cab08
+#### Transaction data
 
-These are all the transactions performed by users who contributed to the grant as of 20th of January 2022.
-It is organized with one CSV file for each address to facilitate the loading of only the necessary data transactions
-when performing analysis on a specific grant or project.
+You can load the data directly into the `df_tx` variable.
+https://huggingface.co/datasets/Poupou/Gitcoin-Citizen-Round/blob/main/tx_citizen_round.parquet
 
-The data was produced using the sbdata package and the FlipsideApi class.
+These are all the transactions performed by users who contributed to the Citizen round on grant as of 30th of June 2023.
 
-### Standardised Grant Data and Addresses
+#### Example of vote data
 
-The data provided by Gitcoin was standardized in the same format for all grants to make it easier to manipulate. For
-example to find all the wallet addresses of contributors to a specific project or grant.
+Example query to extract the vote data of the citizen round of June 2023 from the Flipside API:
+https://flipsidecrypto.xyz/poupou/q/j3E9SEfMLkxG/citizen-round-votes
 
-These can be recreated by using the files provided by ODC/Gitcoin. The files provided should be put with the
-architecture below. Each Grant is in a folder and inside there are the applications CSV and the votes CSV.
-
-Then run the jupyter notebook jupyter/normalize_contribution_data.ipynb
-this will create files in the root of the -explo
-folder as shown below.
-
-You can also download the standardized data from Ocean market place here:
-
-- Standardized grant
-  contributions : https://market.oceanprotocol.com/asset/did:op:eac43d546ba84e5b82ddf4d2fbf4db9290711e8d2c2a167bce148b7209d41623
-- standardized grant
-  applications : https://market.oceanprotocol.com/asset/did:op:1d319077f7879e48b01aad52e4a69fc0ea06594c908575df4bd5cd015338b8cf
-
-```commandline
-data/grants
-│   df_application_normalized.csv
-│   df_contribution_address_CLIMATE.csv
-│   df_contribution_address_ETHEREUM.csv
-│   df_contribution_address_FANTOM.csv
-│   df_contribution_address_GR15.csv
-│   df_contribution_address_OSS.csv
-│   df_contribution_address_UNICEF.csv
-│   df_contribution_normalized.csv
-│   df_new_grant_contributor_address.csv
-│   df_new_round_address.csv
-│   unique_ctbt_address.csv
-│
-├───Climate
-│       climate_grant_applications.csv
-│       climate_grant_votes.csv
-│
-├───Ethereum
-│       ethereum_grant_applications.csv
-│       ethereum_grant_votes.csv
-│
-├───Fantom
-│       fantom_grant_applications.csv
-│       fantom_grant_votes.csv
-│
-├───GR15
-│       GR15_contributions.csv
-│       GR15_grants_applications.json
-│
-├───oss
-│       oss_grant_applications.csv
-│       oss_grant_votes.csv
-│
-└───UNICEF
-        unicef_grant_applications.csv
-        unicef_grant_votes.csv
-```
+You could also use the data available on hugging face:
+https://huggingface.co/datasets/Poupou/Gitcoin-Citizen-Round/blob/main/citizen-votes.csv
 
 ## Future works
 
@@ -190,4 +141,5 @@ Future works include:
 - Adding more transactional analysis lego.
 - Adding temporal features to a clustering algorithm as researched in the first
   hackathon [submission](https://github.com/poupou-web3/GC-ODS-Sybil).
-- Adding legos using tags and labels of flipsidde API for example to filter similar seed wallet addresses.
+- Improving seed legos to output cluster of addresses instead of a boolean.
+- See issues at www.github.com/poupou-web3/sybil-scorer/issues
