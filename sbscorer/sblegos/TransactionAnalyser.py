@@ -706,4 +706,7 @@ class TransactionAnalyser(object):
             details_first_outgoing_transaction = self.details_first_outgoing_transaction
             merge = merge.merge(details_first_outgoing_transaction, on='EOA', how='left')
 
+        if 'details_first_incoming_transaction' not in list_features and 'details_first_outgoing_transaction' not in list_features:
+            merge = df_features
+
         return merge
