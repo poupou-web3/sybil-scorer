@@ -12,6 +12,8 @@ vPypi
 test/resources/tmp
 .pypirc
 
+/jupyter/*
+
 /docs/features.custom.rst
 /docs/features.rst
 #/docs/source/sbdata.rst
