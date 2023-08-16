@@ -2,6 +2,9 @@
 
 Sybil scorer is a python package that provides useful classes and methods to analyze the behavior of addresses.
 
+## Help Out
+Consider donating on Gitcoin [https://explorer.gitcoin.co/#/round/10/0x8de918f0163b2021839a8d84954dd7e8e151326d/0x8de918f0163b2021839a8d84954dd7e8e151326d-66](https://explorer.gitcoin.co/#/round/10/0x8de918f0163b2021839a8d84954dd7e8e151326d/0x8de918f0163b2021839a8d84954dd7e8e151326d-66)
+
 ## Installation
 
 - Python >= 3.9
