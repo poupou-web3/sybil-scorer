@@ -35,5 +35,5 @@ Homepage = "https://github.com/poupou-web3/sybil-scorer"
 Documentation = "https://sybil-scorer.readthedocs.io/en/latest/py-modindex.html"
 
 [tool.setuptools.packages.find]
-where = ["sbscorer"]  # list of folders that contain the packages (["."] by default)
-include = ["sbdata", "sblegos", "sbutils"]
+#where = ["sbscorer"]  # list of folders that contain the packages (["."] by default)
+include = ["sbscorer", "sbscorer.*"]

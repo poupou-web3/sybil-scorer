@@ -7,6 +7,7 @@ data/*
 vScorer
 vscorer
 v2scorer
+venv*/
 vTest
 vPypi
 test/resources/tmp
