@@ -10,7 +10,7 @@ class LoadDataTest(unittest.TestCase):
     def test_get_files(self):
         chain = "ethereum"
         files = self.dataLoader.get_files(self.path_to_tx, chain)
-        self.assertEqual(10, len(files))
+        self.assertEqual(8, len(files))
 
     def test_get_files_in_add(self):
         chain = "ethereum"
@@ -19,23 +19,23 @@ class LoadDataTest(unittest.TestCase):
                     '0x000ad8bc3dfbe42d9a87686f67c69001a2006da4', '0x000b94c47e4a8d7a70be12c50fc35722a7596972',
                     '0x000bec82c41837d974899b26b26f9cc8890af9ea', '0x000c93b5354c75f5319db0ec272c0dd900c07b83']
         files = self.dataLoader.get_files_in_address(chain, add_list)
-        self.assertEqual(8, len(files))
+        self.assertEqual(5, len(files))
 
     def test_get_address_name(self):
-        file_name = "0x00000bec592ec7c143c73dc85804962075827ecc_tx.csv"
+        file_name = "0x000bec82c41837d974899b26b26f9cc8890af9ea_tx.csv"
         address = self.dataLoader.get_address_name(file_name)
-        self.assertEqual("0x00000bec592ec7c143c73dc85804962075827ecc", address)
+        self.assertEqual("0x000bec82c41837d974899b26b26f9cc8890af9ea", address)
 
     def test_load_df_tx(self):
-        file_name = "0x00000bec592ec7c143c73dc85804962075827ecc_tx.csv"
+        file_name = "0x000bec82c41837d974899b26b26f9cc8890af9ea_tx.csv"
         chain = "ethereum"
         df = self.dataLoader.load_df_tx(file_name, chain)
-        self.assertEqual((36, 9), df.shape)
+        self.assertEqual((743, 9), df.shape)
 
     def test_create_df_tx(self):
         chain = "ethereum"
         df = self.dataLoader.create_df_tx(chain)
-        self.assertEqual(10, len(df.EOA.unique()))
+        self.assertEqual(8, len(df.EOA.unique()))
 
     def test_create_df_tx_n(self):
         chain = "ethereum"
@@ -45,7 +45,7 @@ class LoadDataTest(unittest.TestCase):
 
     def test_create_df_tx_add(self):
         chain = "ethereum"
-        df = self.dataLoader.create_df_tx(chain, address_list=["0x00000bec592ec7c143c73dc85804962075827ecc"])
+        df = self.dataLoader.create_df_tx(chain, address_list=["0x000bec82c41837d974899b26b26f9cc8890af9ea"])
         self.assertEqual(1, len(df.EOA.unique()))
 
 
