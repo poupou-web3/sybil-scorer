@@ -1,3 +1,4 @@
 pandas>=2.0.1
 flipside>=2.0.7
 pylcs==0.0.8
+tsfresh>=0.20.1

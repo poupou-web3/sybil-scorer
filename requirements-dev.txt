@@ -1,7 +1,8 @@
 pandas>=2.0.1
 flipside>=2.0.7
 pylcs==0.0.8
-tsfresh==0.20.0
+tsfresh>=0.20.1
+
 scikit-learn==1.2.0
 seaborn==0.12.2
 jupyterlab==3.5.2
