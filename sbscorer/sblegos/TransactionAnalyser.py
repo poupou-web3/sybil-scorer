@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 from pathlib import Path
 
 import numpy as np
@@ -633,6 +634,15 @@ class TransactionAnalyser(object):
                                                                                ascending=False).reset_index().drop(
             columns=['to_address']).rename(columns={'from_address': 'seeder', 'EOA': 'count_seed'})
 
+    @staticmethod
+    def print_time_elapsed(start_time, feature_name):
+        elapsed_time = time.time() - start_time
+        print(f"Time taken for {feature_name}: {elapsed_time:.2f} seconds")
+
+    @staticmethod
+    def print_start_computing(feature_name):
+        print(f'Start computing {feature_name}')
+
     def get_df_features(self, list_features=None):
         """
         Get the features of the transaction dataset
@@ -661,28 +671,60 @@ class TransactionAnalyser(object):
         elif list_features == 'all':
             list_features = default_features + ['lcs']
 
+        start_time = time.time()
         if 'count_tx' in list_features:
+            self.print_start_computing("count_tx")
             df_features = self.gb_EOA_sorted['tx_hash'].count().reset_index().rename(columns={'tx_hash': 'count_tx'})
+            self.print_time_elapsed(start_time, 'count_tx')
         else:
             df_features = pd.DataFrame(self.df_transactions['EOA'].unique(), columns=['EOA'])
 
+        start_time = time.time()
         if 'less_10_tx' in list_features:
+            self.print_start_computing("less_10_tx")
             df_features['less_10_tx'] = df_features['count_tx'] <= 10
+            self.print_time_elapsed(start_time, 'less_10_tx')
+
+        start_time = time.time()
         if 'count_same_seed' in list_features:
+            self.print_start_computing("count_same_seed")
             df_features['count_same_seed'] = df_features['EOA'].apply(lambda x: self.count_same_seed(x))
+            self.print_time_elapsed(start_time, 'count_same_seed')
+
+        start_time = time.time()
         if 'count_same_seed_naive' in list_features:
+            self.print_start_computing("count_same_seed_naive")
             df_features['count_same_seed_naive'] = df_features['EOA'].apply(lambda x: self.count_same_seed_naive(x))
+            self.print_time_elapsed(start_time, 'count_same_seed_naive')
+
+        start_time = time.time()
         if 'same_seed' in list_features:
+            self.print_start_computing("same_seed")
             df_features['same_seed'] = df_features['count_same_seed'] > 0
+            self.print_time_elapsed(start_time, 'same_seed')
+
+        start_time = time.time()
         if 'same_seed_naive' in list_features:
+            self.print_start_computing("same_seed_naive")
             df_features['same_seed_naive'] = df_features['count_same_seed_naive'] > 0
+            self.print_time_elapsed(start_time, 'same_seed_naive')
+
+        start_time = time.time()
         if 'seed_suspicious' in list_features:
+            self.print_start_computing("seed_suspicious")
             df_features['seed_suspicious'] = df_features.loc[:, 'same_seed'].ne(df_features.loc[:, 'same_seed_naive'])
+            self.print_time_elapsed(start_time, 'seed_suspicious')
+
+        start_time = time.time()
         if 'count_interact_other_ctbt' in list_features:
+            self.print_start_computing("count_interact_other_ctbt")
             df_features['count_interact_other_ctbt'] = df_features['EOA'].apply(
                 lambda x: self.count_interaction_with_other_contributor(x))
+            self.print_time_elapsed(start_time, 'count_interact_other_ctbt')
 
+        start_time = time.time()
         if 'lcs' in list_features:
+            self.print_start_computing("lcs")
 
             df_features['lcs'] = 0
             df_features['cluster_size_lcs'] = 0
@@ -698,15 +740,22 @@ class TransactionAnalyser(object):
                 df_features.loc[df_bool_less_10_tx, 'max_score_lcs'] = r.apply(lambda x: self.get_max_score_lcs(x))
 
             df_features['has_lcs'] = df_features['cluster_size_lcs'] > 0
+            self.print_time_elapsed(start_time, 'lcs')
 
+        start_time = time.time()
         if 'details_first_incoming_transaction' in list_features:
+            self.print_start_computing("details_first_incoming_transaction")
             details_first_incoming_transaction = self.details_first_incoming_transaction
             merge = df_features.merge(details_first_incoming_transaction, on='EOA', how='left')
+            self.print_time_elapsed(start_time, 'details_first_incoming_transaction')
         else:
             merge = df_features
 
+        start_time = time.time()
         if 'details_first_outgoing_transaction' in list_features:
+            self.print_start_computing("details_first_outgoing_transaction")
             details_first_outgoing_transaction = self.details_first_outgoing_transaction
             merge = merge.merge(details_first_outgoing_transaction, on='EOA', how='left')
+            self.print_time_elapsed(start_time, 'details_first_outgoing_transaction')
 
         return merge
