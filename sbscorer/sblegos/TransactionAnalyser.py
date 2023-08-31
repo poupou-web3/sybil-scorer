@@ -44,6 +44,7 @@ class TransactionAnalyser(object):
         self.df_transactions = df_transactions[df_transactions['EOA'].isin(array_address)]
 
         # store the array of string transactions
+        self.unique_eoa = None
         self.dict_add_interacted = None
         self.dict_add_string_tx = None
         self.dict_add_value_string_tx = None
@@ -52,6 +53,8 @@ class TransactionAnalyser(object):
         self.set_group_by_sorted_EOA()
         self.set_seed_wallet_naive()
         self.set_seed_wallet()
+        self.set_unique_eoa()
+        self.set_dict_add_interacted()
         self.set_details_first_incoming_transaction()
         self.set_details_first_outgoing_transaction()
 
@@ -306,17 +309,15 @@ class TransactionAnalyser(object):
         -------
 
         """
-        if self.dict_add_interacted is None:
-            dict_add_interacted = {}
-            contributors = self.get_contributors()
-            for address in contributors:
-                df = self.gb_EOA_sorted.get_group(address)
-                add_interacted = np.append(df['to_address'].to_numpy(), df['from_address'].to_numpy())
-                add_interacted = add_interacted.astype('str')
-                unique_add_interacted = np.unique(add_interacted)
-                unique_add_interacted = unique_add_interacted[unique_add_interacted != address]
-                dict_add_interacted[address] = unique_add_interacted
-            self.dict_add_interacted = dict_add_interacted
+        dict_add_interacted = {}
+        for address in self.unique_eoa:
+            df = self.gb_EOA_sorted.get_group(address)
+            add_interacted = np.append(df['to_address'].to_numpy(), df['from_address'].to_numpy())
+            add_interacted = add_interacted.astype('str')
+            unique_add_interacted = np.unique(add_interacted)
+            unique_add_interacted = unique_add_interacted[unique_add_interacted != address]
+            dict_add_interacted[address] = unique_add_interacted
+        self.dict_add_interacted = dict_add_interacted
 
     def count_interaction_with_other_contributor(self, address):
         """
@@ -331,8 +332,7 @@ class TransactionAnalyser(object):
         count_interaction_with_other_contributor : int
             The number of interactions of the address with other contributor (not itself)
         """
-        self.set_dict_add_interacted()
-        contributors = self.get_contributors()
+        contributors = self.get_unique_eoa()
         other_contributors = contributors[contributors != address]
 
         return self.count_interaction_any(address, other_contributors)
@@ -389,15 +389,26 @@ class TransactionAnalyser(object):
         count_interaction_with_any = self.count_interaction_any(address, array_address)
         return count_interaction_with_any > 0
 
-    def get_contributors(self):
+    def get_unique_eoa(self):
         """
-        Return a list of contributors of the grant
+        Return a list of unique eoa
         Returns
         -------
         contributors : narray
             The array of contributors of the grant
         """
-        return self.df_transactions['EOA'].unique()
+        return self.unique_eoa
+
+    def set_unique_eoa(self):
+        """
+        Set the array of unique eoa
+
+        Returns
+        -------
+        None
+            Set the array of contributors of the grant
+        """
+        self.unique_eoa = self.df_transactions['EOA'].unique()
 
     def transaction_similitude_pylcs(self, address, algo_type="address_only", minimum_sim_tx=5):
         """
