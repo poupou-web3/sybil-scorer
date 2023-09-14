@@ -692,7 +692,7 @@ class TransactionAnalyser(object):
             list_features = default_features + ['lcs']
 
         start_time = time.time()
-        if 'count_tx' in list_features:
+        if any(ft in list_features for ft in ['count_tx', 'lcs', 'less_10_tx']):
             self.print_start_computing("count_tx")
             df_features = self.gb_EOA_sorted['tx_hash'].count().reset_index().rename(columns={'tx_hash': 'count_tx'})
             self.print_time_elapsed(start_time, 'count_tx')
@@ -700,7 +700,7 @@ class TransactionAnalyser(object):
             df_features = pd.DataFrame(self.df_transactions['EOA'].unique(), columns=['EOA'])
 
         start_time = time.time()
-        if 'less_10_tx' in list_features:
+        if any(ft in list_features for ft in ['lcs', 'less_10_tx']):
             self.print_start_computing("less_10_tx")
             df_features['less_10_tx'] = df_features['count_tx'] <= 10
             self.print_time_elapsed(start_time, 'less_10_tx')
