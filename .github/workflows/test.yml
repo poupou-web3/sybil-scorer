@@ -28,4 +28,4 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest test.sblegos.TransactionAnalyserTest.py
+          pytest test/sblegos/TransactionAnalyserTest.py
