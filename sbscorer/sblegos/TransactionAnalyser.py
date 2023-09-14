@@ -640,6 +640,13 @@ class TransactionAnalyser(object):
         else:
             return lcs.reset_index()['score'].max()
 
+    @staticmethod
+    def get_lcs(lcs):
+        if lcs.shape[0] == 0:
+            return 0
+        else:
+            return lcs.reset_index().values
+
     def get_df_seeder_count(self):
         return self.df_seed_wallet.groupby('from_address').count().sort_values(by='to_address',
                                                                                ascending=False).reset_index().drop(
@@ -749,6 +756,7 @@ class TransactionAnalyser(object):
                 df_features.loc[df_bool_less_10_tx, 'cluster_size_lcs'] = r.apply(lambda x: len(x))
                 df_features.loc[df_bool_less_10_tx, 'mean_score_lcs'] = r.apply(lambda x: self.get_mean_score_lcs(x))
                 df_features.loc[df_bool_less_10_tx, 'max_score_lcs'] = r.apply(lambda x: self.get_max_score_lcs(x))
+                df_features.loc[df_bool_less_10_tx, 'lcs'] = r.apply(lambda x: self.get_lcs(x))
 
             df_features['has_lcs'] = df_features['cluster_size_lcs'] > 0
             self.print_time_elapsed(start_time, 'lcs')
