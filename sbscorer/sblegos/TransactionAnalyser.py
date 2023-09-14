@@ -438,14 +438,12 @@ class TransactionAnalyser(object):
         #     The number of character to skip when using the longest common substring algorithm. Default is 0.
         #     1 may be a good choice when algo_type is "address_and_value".
 
-        Returns
+        Return
         -------
-        has_similar_behavior : bool
-            True if the address has similar behavior as another address
-        score_similar_behavior : float
-            The similarity score of the address
-        list_similar_address : map
-            The map of address and their similarity score
+        df_similar_address : pd.DataFrame
+            The data frame of similar address, index is the similar address, columns are the lcs and the score
+            lcs is the number of identical consecutive transactions between the two addresses
+            score is ratio between the maximum number of consecutive transactions between the two addresses and the lcs
 
         """
 
@@ -468,9 +466,11 @@ class TransactionAnalyser(object):
         max_shape = max(shape_target, shape_target * 3)
 
         list_lcs = []
+        list_shape = []
         for add in self.array_address:
             if add != address:
                 shape_other = self.get_address_transactions(add).shape[0]
+                list_shape.append(shape_other)
                 if min_shape < shape_other < max_shape:  # Heuristic prevent comparing addresses with different shapes
                     if algo_type == "address_only":
                         str_transactions_other = self.dict_add_string_tx.get(add)
@@ -482,6 +482,7 @@ class TransactionAnalyser(object):
                     list_lcs.append(0)
             else:
                 list_lcs.append(0)
+                list_shape.append(0)
 
         if minimum_sim_tx == -1:
             mask = np.array(list_lcs) > max(3, min(10, int(shape_target / 4)))
@@ -489,9 +490,10 @@ class TransactionAnalyser(object):
             mask = np.array(list_lcs) > minimum_sim_tx
         df_similar_address = pd.DataFrame(self.array_address[mask], columns=['address'])
         df_similar_address['lcs'] = np.array(list_lcs)[mask]
-        len_tx = len(str_transactions_target) / 2  # Divide by 2 because we have from_address and to_address
-        df_similar_address['score'] = df_similar_address.loc[:, 'lcs'].apply(
-            lambda x: min(x / len_tx, 1))
+        df_similar_address['shape'] = np.array(list_shape)[mask]
+        df_similar_address['len_intersect'] = df_similar_address['shape'].apply(lambda x: max(1, min(shape_target, x)))
+        df_similar_address['score'] = df_similar_address['lcs'] / df_similar_address['len_intersect']
+        df_similar_address.drop(columns=['shape', 'len_intersect'], inplace=True)
         return df_similar_address.set_index('address')
 
     @staticmethod
