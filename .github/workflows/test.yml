@@ -27,5 +27,6 @@ jobs:
           pip install pytest==7.2.1
 
       - name: Run tests
+        working-directory: test/sblegos
         run: |
-          pytest test/sblegos/TransactionAnalyserTest.py
+          pytest TransactionAnalyserTest.py
