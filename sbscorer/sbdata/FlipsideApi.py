@@ -67,7 +67,7 @@ class FlipsideApi(object):
         # Retry interval in seconds
         self.RETRY_INTERVAL_SECONDS = retry_interval
         # The max output size of flipside
-        self.MAX_ROWS = 1000000  # 1 million is the max output size of flipside
+        self.MAX_ROWS = 1000000  # 1 million is the max output size of flipside not true anymore its 1 GB
 
     def execute_query(self, sql):
         """
