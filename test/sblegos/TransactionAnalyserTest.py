@@ -1,5 +1,6 @@
 import os
 import unittest
+from pathlib import Path
 
 import pandas as pd
 
@@ -8,7 +9,8 @@ from sbscorer.sbutils.LoadData import LoadData
 
 
 class TransactionAnalyserTest(unittest.TestCase):
-    path_to_resources = "../resources"
+    current_dir = Path(os.getcwd())
+    path_to_resources = os.path.join(current_dir.parent, "resources")
     path_to_tx = os.path.join(path_to_resources, "transactions")
     dataLoader = LoadData(path_to_tx)
     path_to_test_add = os.path.join(path_to_resources, "test_address")
