@@ -35,8 +35,8 @@ def get_df_outgoing_tx_ratio(df):
 
 def get_df_interaction(df):
     # unique address interactions
-    df_interacted = pd.concat([df.loc[:, ["eoa", "from"]].set_axis(["eoa", "interacted"], axis=1),
-                               df.loc[:, ["eoa", "to"]].set_axis(["eoa", "interacted"], axis=1)], join="inner")
+    df_interacted = pd.concat(([df.loc[:, ["eoa", "from"]].rename(columns={"from": "interacted"})],
+                               df.loc[:, ["eoa", "to"]].rename(columns={"to": "interacted"})))
     unique_interacted = df_interacted.groupby(by="eoa")["interacted"].unique()
     df_unique_interacted = pd.DataFrame(unique_interacted).reset_index()
     df_unique_interacted["countUniqueInteracted"] = np.nan
