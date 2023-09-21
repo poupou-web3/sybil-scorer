@@ -24,7 +24,10 @@ class FeaturesTest(unittest.TestCase):
 
     def test_get_features(self):
         df_features = self.fc.create_feature_df()
-        self.assertEqual(df_features.shape[0], 3)
+        print(df_features.shape)
+        print(df_features.columns.values)
+        self.assertEqual(196, df_features.shape[1])
+        self.assertEqual(self.df_tx['eoa'].nunique(), df_features.shape[0])
 
 
 if __name__ == '__main__':

@@ -130,18 +130,21 @@ FC_TSFRESH_GAS = {
 }
 
 FC_TSFRESH = {
-    "timeStamp": FC_TSFRESH_TIME,
+    "block_timestamp": FC_TSFRESH_TIME,
     "value": FC_TSFRESH_VALUE,
-    "gas": FC_TSFRESH_GAS,
-    "gasPrice": FC_TSFRESH_GAS
+    "tx_fee": FC_TSFRESH_VALUE,
+    "gas_used": FC_TSFRESH_GAS,
+    "gas_limit": FC_TSFRESH_GAS,
 }
 
+# ok
 FC_TSFRESH_T_V = {
-    "timeStamp": FC_TSFRESH_TIME,
+    "block_timestamp": FC_TSFRESH_TIME,
     "value": FC_TSFRESH_VALUE,
+    "tx_fee": FC_TSFRESH_VALUE,
 }
 
 FC_TSFRESH_GAS_2 = {
-    "gas": FC_TSFRESH_GAS,
-    "gasPrice": FC_TSFRESH_GAS
+    "gas_used": FC_TSFRESH_GAS,
+    "gas_limit": FC_TSFRESH_GAS,
 }
