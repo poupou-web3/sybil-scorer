@@ -35,6 +35,34 @@ def time_since_last(x, current_time):
 
 
 @set_property("fctype", "simple")
+def time_first_tx(x):
+    """
+    Return the time of the first transaction
+
+    :param x: the time series to calculate the feature of
+    :type x: numpy.ndarray
+    :return: the value of this feature
+    :return type: float
+    """
+    result = np.min(x)
+    return result
+
+
+@set_property("fctype", "simple")
+def time_last_tx(x):
+    """
+    Return the time of the first transaction
+
+    :param x: the time series to calculate the feature of
+    :type x: numpy.ndarray
+    :return: the value of this feature
+    :return type: float
+    """
+    result = np.max(x)
+    return result
+
+
+@set_property("fctype", "simple")
 def ratio_tx_time_since_time(x, current_time, time):
     """
     Return the ratio of transactions that occured in the time
@@ -128,4 +156,4 @@ def ratio_between_quantile(x, q1, q2):
 
 # ratio_above_mean
 
-# distance between quertiles
+# distance between quartiles

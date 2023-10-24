@@ -1,7 +1,6 @@
 import time
 
-from sbscorer.sblegos.features.custom.extract import time_since_first, time_since_last, ratio_tx_time_since_time, \
-    ratio_tx_time_since_last_tx, ratio_above_mean
+from sbscorer.sblegos.features.custom.extract import *
 
 DAY = 3600
 WEEK = 7 * DAY
@@ -37,8 +36,10 @@ FC_TSFRESH_TIME = {"approximate_entropy": [{'m': 2, 'r': 0.1},
                    "permutation_entropy": [{'dimension': 3, 'tau': 1},
                                            {'dimension': 4, 'tau': 1},
                                            {'dimension': 5, 'tau': 1}],
-                   "ratio_value_number_to_time_series_length": None, time_since_first: [{'current_time': current_time}],
+                   "ratio_value_number_to_time_series_length": None,
+                   time_since_first: [{'current_time': current_time}],
                    time_since_last: [{'current_time': current_time}],
+                   time_last_tx: None, time_first_tx: None,
                    ratio_tx_time_since_time: [{'current_time': current_time, "time": DAY},
                                               {'current_time': current_time, "time": WEEK},
                                               {'current_time': current_time, "time": MONTH},
@@ -51,6 +52,7 @@ FC_TSFRESH_TIME = {"approximate_entropy": [{'m': 2, 'r': 0.1},
 # add custom features
 
 FC_TSFRESH_VALUE = {
+    "sum_values": None,
     "abs_energy": None,
     "approximate_entropy": [{'m': 2, 'r': 0.1},
                             {'m': 2, 'r': 0.3},
@@ -91,6 +93,7 @@ FC_TSFRESH_VALUE = {
 }
 
 FC_TSFRESH_GAS = {
+    "sum_values": None,
     "approximate_entropy": [{'m': 2, 'r': 0.1},
                             {'m': 2, 'r': 0.3},
                             {'m': 2, 'r': 0.5},
