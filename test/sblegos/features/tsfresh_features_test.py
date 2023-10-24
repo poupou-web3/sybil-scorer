@@ -16,14 +16,14 @@ class TsfreshFeaturesTests(unittest.TestCase):
         result = time_since_last(self.x_add_1, self.current_time)
         self.assertEqual(2, result)
 
-    def test_ratio_tx_time_since_time(self):
+    def test_time_ratio_tx_time_since_time(self):
         time = 3
-        result = ratio_tx_time_since_time(self.x_add_1, self.current_time, time)
+        result = time_ratio_tx_time_since_time(self.x_add_1, self.current_time, time)
         self.assertEqual(2 / 9, result)
 
-    def test_ratio_tx_time_since_last_tx(self):
+    def test_time_ratio_tx_time_since_last_tx(self):
         time = 3
-        result = ratio_tx_time_since_last_tx(self.x_add_1, time)
+        result = time_ratio_tx_time_since_last_tx(self.x_add_1, time)
         self.assertEqual(4 / 9, result)
 
     def test_ratio_above_mean(self):

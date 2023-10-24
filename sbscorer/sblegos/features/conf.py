@@ -40,14 +40,16 @@ FC_TSFRESH_TIME = {"approximate_entropy": [{'m': 2, 'r': 0.1},
                    time_since_first: [{'current_time': current_time}],
                    time_since_last: [{'current_time': current_time}],
                    time_last_tx: None, time_first_tx: None,
-                   ratio_tx_time_since_time: [{'current_time': current_time, "time": DAY},
-                                              {'current_time': current_time, "time": WEEK},
-                                              {'current_time': current_time, "time": MONTH},
-                                              {'current_time': current_time, "time": MONTHS_3}],
-                   ratio_tx_time_since_last_tx: [{"time": DAY},
-                                                 {"time": WEEK},
-                                                 {"time": MONTH},
-                                                 {"time": MONTHS_3}], ratio_above_mean: None}
+                   time_max_utc_hour_day: None,
+                   time_min_utc_hour_day: None,
+                   time_ratio_tx_time_since_time: [{'current_time': current_time, "time": DAY},
+                                                   {'current_time': current_time, "time": WEEK},
+                                                   {'current_time': current_time, "time": MONTH},
+                                                   {'current_time': current_time, "time": MONTHS_3}],
+                   time_ratio_tx_time_since_last_tx: [{"time": DAY},
+                                                      {"time": WEEK},
+                                                      {"time": MONTH},
+                                                      {"time": MONTHS_3}], ratio_above_mean: None}
 
 # add custom features
 

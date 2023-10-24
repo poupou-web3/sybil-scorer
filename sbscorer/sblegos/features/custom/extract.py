@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import numpy as np
 from tsfresh.feature_extraction.feature_calculators import set_property
 
@@ -63,7 +65,7 @@ def time_last_tx(x):
 
 
 @set_property("fctype", "simple")
-def ratio_tx_time_since_time(x, current_time, time):
+def time_ratio_tx_time_since_time(x, current_time, time):
     """
     Return the ratio of transactions that occured in the time
 
@@ -82,7 +84,7 @@ def ratio_tx_time_since_time(x, current_time, time):
 
 
 @set_property("fctype", "simple")
-def ratio_tx_time_since_last_tx(x, time):
+def time_ratio_tx_time_since_last_tx(x, time):
     """
     Return the ratio of transactions that occured in the time before the last transaction
 
@@ -97,6 +99,32 @@ def ratio_tx_time_since_last_tx(x, time):
     bool_above = x >= (last_tx_time - time)
     result = bool_above.sum() / len(x)
     return result
+
+
+def time_min_utc_hour_day(x):
+    """
+    Return the minimum hour of the day in UTC
+
+    :param x: the time series to calculate the feature of
+    :type x: numpy.ndarray
+    :return: the value of this feature
+    :return type: float
+    """
+    ar_dt = np.array([datetime.utcfromtimestamp(ts).hour for ts in x])
+    return ar_dt.min()
+
+
+def time_max_utc_hour_day(x):
+    """
+    Return the maximum hour of the day in UTC
+
+    :param x: the time series to calculate the feature of
+    :type x: numpy.ndarray
+    :return: the value of this feature
+    :return type: float
+    """
+    ar_dt = np.array([datetime.utcfromtimestamp(ts).hour for ts in x])
+    return ar_dt.max()
 
 
 @set_property("fctype", "simple")
