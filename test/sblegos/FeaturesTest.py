@@ -26,10 +26,10 @@ class FeaturesTest(unittest.TestCase):
         df_features = self.fc.create_feature_df()
         print(df_features.shape)
         print(df_features.columns.values)
-        self.assertEqual(204, df_features.shape[1])
+        self.assertEqual(205, df_features.shape[1])
         self.assertEqual(self.df_tx['eoa'].nunique(), df_features.shape[0])
-        print(df_features['block_timestamp__time_max_utc_hour_day'])
-        print(df_features['block_timestamp__time_min_utc_hour_day'])
+        # print(df_features['block_timestamp__time_max_utc_hour_day'])
+        # print(df_features['block_timestamp__time_most_active_hour_day'])
 
 
 if __name__ == '__main__':

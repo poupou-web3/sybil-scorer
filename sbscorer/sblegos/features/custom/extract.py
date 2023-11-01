@@ -101,6 +101,7 @@ def time_ratio_tx_time_since_last_tx(x, time):
     return result
 
 
+@set_property("fctype", "simple")
 def time_min_utc_hour_day(x):
     """
     Return the minimum hour of the day in UTC
@@ -114,6 +115,7 @@ def time_min_utc_hour_day(x):
     return ar_dt.min()
 
 
+@set_property("fctype", "simple")
 def time_max_utc_hour_day(x):
     """
     Return the maximum hour of the day in UTC
@@ -125,6 +127,20 @@ def time_max_utc_hour_day(x):
     """
     ar_dt = np.array([datetime.utcfromtimestamp(ts).hour for ts in x])
     return ar_dt.max()
+
+
+@set_property("fctype", "simple")
+def time_most_active_hour_day(x):
+    """
+    Return the most active hour of the day in UTC
+
+    :param x: the time series to calculate the feature of
+    :type x: numpy.ndarray
+    :return: the value of this feature
+    :return type: int
+    """
+    ar_dt = np.array([datetime.utcfromtimestamp(ts).hour for ts in x])
+    return np.argmax(np.bincount(ar_dt))
 
 
 @set_property("fctype", "simple")
@@ -181,7 +197,3 @@ def ratio_between_quantile(x, q1, q2):
     bool_between = np.logical_and(bool_above, bool_below)
     result = bool_between.sum() / len(x)
     return result
-
-# ratio_above_mean
-
-# distance between quartiles
