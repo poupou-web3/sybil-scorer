@@ -23,7 +23,7 @@ class FeatureCreator(Transaction):
         df_features = self.df_transactions[
             ['index_tx', 'eoa', 'block_timestamp', 'value', 'tx_fee', 'gas_used', 'gas_limit']]
 
-        df_features['block_timestamp'] = (pd.to_datetime(df_features["block_timestamp"])).astype('int64') // 10E9
+        df_features.loc[:, 'block_timestamp'] = (pd.to_datetime(df_features["block_timestamp"])).astype('int64') // 10E9
         features_tsfresh = extract_features(df_features,
                                             column_id='eoa',
                                             column_sort='index_tx',

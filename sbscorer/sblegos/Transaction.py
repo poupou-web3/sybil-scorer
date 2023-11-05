@@ -45,7 +45,7 @@ class Transaction(object):
         if 'eoa' not in columns:
             tmp_df_tx = df_transactions.copy()
             print("Creating eoa column")
-            tmp_df_tx = pd.concat(tmp_df_tx, tmp_df_tx)
+            tmp_df_tx = pd.concat([tmp_df_tx, tmp_df_tx])
             tmp_df_tx['eoa'] = np.concatenate((tmp_df_tx['from_address'].values,
                                                tmp_df_tx['to_address'].values))
         else:
