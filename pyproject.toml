@@ -4,7 +4,7 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = "sybil-scorer"
-version = "0.3.0"
+version = "0.4.0"
 description = "A sybil scoring tool"
 readme = "README.md"
 authors = [{ name = "Poupou", email = "poupou-web3@protonmail.com" }]
@@ -16,8 +16,9 @@ classifiers = [
 ]
 keywords = ["Sybil", "OSS", "Gitcoin", "Quadratic", "OpenData Community", "ODC"]
 dependencies = [
-    "pandas==2.0.1",
+    "pandas>=2.0.2",
     "flipside>=2.0.7",
+    'tsfresh>=0.20.1',
     'tomli; python_version < "3.11"',
     'pylcs==0.0.8',
 ]
